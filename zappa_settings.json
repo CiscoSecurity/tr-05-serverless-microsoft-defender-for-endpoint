@@ -7,8 +7,8 @@
         "log_level": "INFO",
         "manage_roles": false,
         "profile_name": "serverless",
-        "project_name": "tr-template-relay",
+        "project_name": "tr-microsoft-defender-atp-relay",
         "runtime": "python3.7",
-        "s3_bucket": "zappa-tr-template-relay"
+        "s3_bucket": "zappa-tr-microsoft-defender-atp-relay"
     }
 }
