@@ -1,13 +1,14 @@
 import os
+import json
 import requests
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
 from flask import request, current_app, jsonify
-from werkzeug.exceptions import Forbidden, BadRequest
 from http import HTTPStatus
 
 from .errors import (CTRBadRequestError, CTRNotFoundError,
-                     CTRUnexpectedResponseError, CTRInvalidCredentialsError)
+                     CTRUnexpectedResponseError, CTRInvalidCredentialsError,
+                     CTRInvalidJWTError)
 
 
 def get_jwt():
@@ -25,7 +26,7 @@ def get_jwt():
         assert scheme.lower() == 'bearer'
         return jwt.decode(token, current_app.config['SECRET_KEY'])
     except (KeyError, ValueError, AssertionError, JoseError):
-        raise Forbidden('Invalid Authorization Bearer JWT.')
+        raise CTRInvalidJWTError()
 
 
 def get_json(schema):
@@ -40,12 +41,16 @@ def get_json(schema):
 
     data = request.get_json(force=True, silent=True, cache=False)
 
-    message = schema.validate(data)
+    error = schema.validate(data) or None
 
-    if message:
-        raise BadRequest(message)
+    if error:
+        data = None
+        error = {
+            'code': 'invalid_payload',
+            'message': f'Invalid JSON payload received. {json.dumps(error)}.',
+        }
 
-    return data
+    return data, error
 
 
 def jsonify_data(data):
@@ -53,12 +58,19 @@ def jsonify_data(data):
 
 
 def jsonify_errors(error):
+    # According to the official documentation, an error here means that the
+    # corresponding TR module is in an incorrect state and needs to be
+    # reconfigured:
+    # https://visibility.amp.cisco.com/help/alerts-errors-warnings.
+    error['type'] = 'fatal'
+    error['code'] = error.pop('code').lower().replace('_', ' ')
+
     return jsonify({'errors': [error]})
 
 
 def get_token(credentials):
     body = {
-        'resource': current_app.config['API_URL'],
+        'resource': current_app.config['API_HOST'],
         'client_id': credentials['client_id'],
         'client_secret': credentials['client_secret'],
         'grant_type': 'client_credentials'
