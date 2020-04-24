@@ -49,6 +49,36 @@ As a TR Relay Module:
 variables from a `.env` file (i.e.`TR_API_CLIENT_ID`, `TR_API_CLIENT_PASSWORD`,
 `URL`, `JWT`) and pass them to the corresponding command.
 
+## Details
+The Microsoft Defender ATP Relay API implements the following list of endpoints:
+* `/observe/observables`
+* `/health`
+
+Other endpoints (`/deliberate/observables`, `/refer/observables`, `/respond/observables`, `/respond/trigger`) 
+returns empty responses.
+
+Supported types of observables:
+* `ip`
+* `sha1`
+* `sha256`
+* `domain`
+
+Other types of observables will be ignored.
+
+## JWT Generating
+
+Payload for encryption must have structure:
+```
+{
+    'client_id': <Application (client) ID:String>,
+    'client_secret': <Directory (tenant) ID:String>,
+    'tenant_id': <Secret:String>
+}
+```
+
+After encryption set your `SECRET_KEY` environment 
+variable in AWS lambda for successful decryption in Relay API.
+
 ## Usage
 
 ```bash
@@ -59,4 +89,4 @@ pip install -U -r use-requirements.txt
 export URL=<...>
 
 http POST "${URL}"/health"
-http POST "${URL}"/observe/observables" < any_observables.json
+http POST "${URL}"/observe/observables" < observables.json
