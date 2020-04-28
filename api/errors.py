@@ -45,6 +45,14 @@ class CTRInvalidCredentialsError(CTRBaseError):
         )
 
 
+class CTRInvalidJWTError(CTRBaseError):
+    def __init__(self):
+        super().__init__(
+            PERMISSION_DENIED,
+            'Invalid Authorization Bearer JWT.'
+        )
+
+
 class CTRUnexpectedResponseError(CTRBaseError):
     def __init__(self, payload):
         error_payload = json.loads(payload).get('error_description', [])
