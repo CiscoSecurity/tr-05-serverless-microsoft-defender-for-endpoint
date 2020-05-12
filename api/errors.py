@@ -33,7 +33,7 @@ class CTRNotFoundError(CTRBaseError):
     def __init__(self):
         super().__init__(
             NOT_FOUND,
-            'The Microsoft Defender ATP not found.'
+            'The Microsoft Defender ATP not found the requested resource.'
         )
 
 
@@ -55,7 +55,10 @@ class CTRInvalidJWTError(CTRBaseError):
 
 class CTRUnexpectedResponseError(CTRBaseError):
     def __init__(self, payload):
-        error_payload = json.loads(payload).get('error_description', [])
+        error_payload = json.loads(
+            payload).get(
+            'error', {}).get(
+            'message', 'Something went wrong.')
 
         super().__init__(
             UNKNOWN,

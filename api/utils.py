@@ -4,8 +4,12 @@ from authlib.jose.errors import JoseError
 from flask import request, current_app, jsonify
 from http import HTTPStatus
 
-from .errors import (CTRBadRequestError, CTRNotFoundError,
-                     CTRUnexpectedResponseError, CTRInvalidCredentialsError)
+from .errors import (CTRBadRequestError,
+                     CTRNotFoundError,
+                     CTRInternalServerError,
+                     CTRUnexpectedResponseError,
+                     CTRInvalidCredentialsError,
+                     CTRInvalidJWTError)
 
 
 def get_jwt():
@@ -65,16 +69,16 @@ def jsonify_errors(error):
     return jsonify({'errors': [error]})
 
 
-def get_token(session, credentials):
+def set_headers(session, credentials):
     body = {
         'resource': current_app.config['API_HOST'],
-        'client_id': credentials['client_id'],
-        'client_secret': credentials['client_secret'],
+        'client_id': credentials.get('client_id', ''),
+        'client_secret': credentials.get('client_secret', ''),
         'grant_type': 'client_credentials'
     }
 
     url = current_app.config['AUTH_URL'].format(
-        tenant_id=credentials['tenant_id']
+        tenant_id=credentials.get('tenant_id', '')
     )
 
     response = session.get(url, data=body)
@@ -99,20 +103,19 @@ def get_token(session, credentials):
         if response.json().get('error') in (
                 'unauthorized_client', 'invalid_request'):
             raise CTRInvalidCredentialsError()
-    raise CTRUnexpectedResponseError(response.json())
+    elif response.status_code == HTTPStatus.NOT_FOUND:
+        raise CTRInvalidJWTError()
+    raise CTRUnexpectedResponseError({})
 
 
 def call_api(session, url, credentials):
-    if not session.headers:
-        session = get_token(session, credentials)
+    if not session.headers.get('Authorization'):
+        session = set_headers(session, credentials)
 
-    def _call():
-        return session.get(url)
-
-    response = _call()
+    response = session.get(url)
     if response.status_code == HTTPStatus.UNAUTHORIZED:
-        session = get_token(session, credentials)
-        response = _call()
+        session = set_headers(session, credentials)
+        call_api(session, url, credentials)
 
     if not response.ok:
         if response.status_code == HTTPStatus.BAD_REQUEST:
@@ -123,6 +126,7 @@ def call_api(session, url, credentials):
             raise CTRNotFoundError()
 
         if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
-            raise CTRUnexpectedResponseError(response.json())
+            raise CTRInternalServerError()
+        raise CTRUnexpectedResponseError(response.json())
 
     return response.json()

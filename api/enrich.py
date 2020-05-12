@@ -58,12 +58,27 @@ def get_relation(origin, relation, source, related):
 def get_sighting(observable_type, observable_value, data, count, entity):
     relations = []
     targets = []
+
     for evidence in data.get('evidence', []):
+
         def _related_sha1(value):
-            return {"value": value, "type": "sha1"}
+            return {'value': value, 'type': 'sha1'}
 
         def _related_sha256(value):
-            return {"value": value, "type": "sha256"}
+            return {'value': value, 'type': 'sha256'}
+
+        if evidence.get('parentProcessId'):
+            for e in data['evidence']:
+                if e['processId'] == evidence['parentProcessId']:
+                    relations.append(
+                        get_relation(
+                            data['detectionSource'],
+                            'Injected_Into',
+                            {'value': evidence['fileName'],
+                             'type': 'file_name'},
+                            {'value': e['fileName'], 'type': 'file_name'}
+                        )
+                    )
 
         if evidence.get('fileName'):
             if evidence.get('sha1'):
@@ -184,23 +199,28 @@ def observe_observables():
                 entity = 'files'
                 get_file_url = url.format(entity=entity, value=o_value)
                 response = call_api(session, get_file_url, credentials)
-                o_value = response['sha1']
+                url = url.format(
+                    entity=entity,
+                    value=response['sha1']) + '/alerts'
+                response = call_api(session, url, credentials)
 
             elif o_type == 'sha1':
                 entity = 'files'
+                url = url.format(entity=entity, value=o_value) + '/alerts'
+                response = call_api(session, url, credentials)
 
             elif o_type == 'domain':
                 entity = 'domains'
+                url = url.format(entity=entity, value=o_value) + '/alerts'
+                response = call_api(session, url, credentials)
 
             elif o_type == 'ip':
                 entity = 'ips'
+                url = url.format(entity=entity, value=o_value) + '/alerts'
+                response = call_api(session, url, credentials)
 
             else:
                 raise CTRBadRequestError(f"{o_type} type is not supported.")
-
-            url = url.format(entity=entity, value=o_value) + '/alerts'
-
-            response = call_api(session, url, credentials)
 
             values = response['value']
 
