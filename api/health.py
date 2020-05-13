@@ -1,3 +1,4 @@
+import requests
 from flask import Blueprint
 
 from api.utils import get_jwt, jsonify_data, call_api
@@ -9,5 +10,6 @@ health_api = Blueprint('health', __name__)
 def health():
     creds = get_jwt()
     url = 'https://api.securitycenter.windows.com/api/exposureScore'
-    call_api(url, creds)
+    with requests.Session() as session:
+        call_api(session, url, creds)
     return jsonify_data({'status': 'ok'})
