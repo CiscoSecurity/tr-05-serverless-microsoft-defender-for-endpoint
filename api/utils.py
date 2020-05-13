@@ -9,7 +9,8 @@ from .errors import (CTRBadRequestError,
                      CTRInternalServerError,
                      CTRUnexpectedResponseError,
                      CTRInvalidCredentialsError,
-                     CTRInvalidJWTError)
+                     CTRInvalidJWTError,
+                     CTRTooManyRequestsError)
 
 
 def get_jwt():
@@ -127,6 +128,8 @@ def call_api(session, url, credentials):
 
         if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
             raise CTRInternalServerError()
+        if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+            raise CTRTooManyRequestsError()
         raise CTRUnexpectedResponseError(response.json())
 
     return response.json()

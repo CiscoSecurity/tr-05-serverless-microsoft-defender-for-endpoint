@@ -348,7 +348,7 @@ EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR = {
     "errors": [
         {
             "code": "permission denied",
-            "message": "The request is missing a valid credentials.",
+            "message": "The request is missing valid credentials.",
             "type": "fatal"
         }
     ]

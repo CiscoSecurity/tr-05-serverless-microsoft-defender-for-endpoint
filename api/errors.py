@@ -1,10 +1,9 @@
-import json
-
 INVALID_ARGUMENT = 'invalid argument'
 PERMISSION_DENIED = 'permission denied'
 UNKNOWN = 'unknown'
 NOT_FOUND = 'not found'
 INTERNAL = 'internal error'
+TOO_MANY_REQUESTS = 'too many requests'
 
 
 class CTRBaseError(Exception):
@@ -41,7 +40,7 @@ class CTRInvalidCredentialsError(CTRBaseError):
     def __init__(self):
         super().__init__(
             PERMISSION_DENIED,
-            'The request is missing a valid credentials.'
+            'The request is missing valid credentials.'
         )
 
 
@@ -55,14 +54,14 @@ class CTRInvalidJWTError(CTRBaseError):
 
 class CTRUnexpectedResponseError(CTRBaseError):
     def __init__(self, payload):
-        error_payload = json.loads(
-            payload).get(
-            'error', {}).get(
-            'message', 'Something went wrong.')
+        if payload.get('error', {}).get('message'):
+            message = payload['error']['message']
+        else:
+            message = 'Something went wrong.'
 
         super().__init__(
             UNKNOWN,
-            message=str(error_payload)
+            message=str(message)
         )
 
 
@@ -71,4 +70,13 @@ class CTRBadRequestError(CTRBaseError):
         super().__init__(
             INVALID_ARGUMENT,
             error_message
+        )
+
+
+class CTRTooManyRequestsError(CTRBaseError):
+    def __init__(self):
+        super().__init__(
+            TOO_MANY_REQUESTS,
+            'Too many requests to Microsoft Defender ATP have been made. '
+            'Please try again later.'
         )
