@@ -82,7 +82,9 @@ def set_headers(session, credentials):
         tenant_id=credentials.get('tenant_id', '')
     )
 
-    response = session.get(url, data=body)
+    response = session.get(url,
+                           data=body,
+                           headers=current_app.config['CTR_HEADERS'])
     if response.ok:
         token = response.json().get('access_token')
         token_type = response.json().get('token_type', 'Bearer')
@@ -92,10 +94,9 @@ def set_headers(session, credentials):
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'User-Agent': ('Cisco Threat Response Integrations '
-                           '<tr-integrations-support@cisco.com>'),
             'Authorization': f'{token_type} {token}'
         }
+        headers.update(current_app.config['CTR_HEADERS'])
 
         session.headers.update(**headers)
         return session

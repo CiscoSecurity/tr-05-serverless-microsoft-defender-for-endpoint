@@ -8,8 +8,8 @@ health_api = Blueprint('health', __name__)
 
 @health_api.route('/health', methods=['POST'])
 def health():
-    creds = get_jwt()
+    credentials = get_jwt()
     url = 'https://api.securitycenter.windows.com/api/exposureScore'
     with requests.Session() as session:
-        call_api(session, url, creds)
+        call_api(session, url, credentials)
     return jsonify_data({'status': 'ok'})
