@@ -1,8 +1,27 @@
 [![Travis CI Build Status](https://travis-ci.com/CiscoSecurity/tr-05-serverless-microsoft-defender-atp.svg?branch=develop)](https://travis-ci.com/CiscoSecurity/tr-05-serverless-microsoft-defender-atp)
 
 # Microsoft Defender ATP Relay API
-
 [Microsoft Defender APT API](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp)
+
+[Create App and set permission like example](https://www.microsoft.com/en-us/videoplayer/embed/RE4d73M)
+
+### The module requires:
+ - Create an Azure Active Directory application.
+ - Assign the desired permission to the application.
+ - Create a key for this Application.
+ - Save credentials(Tenant ID, Application ID, Application Password) for a JWT structure.
+
+#### Permissions:
+Next permissions is required to work with this module.
+
+| Permission type                    | Permission          | Permission display name     |
+|------------------------------------|---------------------|-----------------------------|
+| Application                        | File.Read.All       | 'Read all file profiles'    |
+| Application                        | Alert.Read.All      | 'Read all alerts'           |
+| Application                        | Alert.ReadWrite.All | 'Read and write all alerts' |
+| Delegated (work or school account) | File.Read.All       | 'Read all file profiles'    |
+| Delegated (work or school account) | Alert.Read          | 'Read alerts'               |
+| Delegated (work or school account) | Alert.ReadWrite     | 'Read and write alerts'     |
 
 The API itself is just a simple Flask (WSGI) application which can be easily
 packaged and deployed as an AWS Lambda Function working behind an AWS API
@@ -70,14 +89,25 @@ Other types of observables will be ignored.
 Payload for encryption must have structure:
 ```
 {
-    'client_id': <Application (client) ID:String>,
-    'client_secret': <Directory (tenant) ID:String>,
-    'tenant_id': <Secret:String>
+    'client_id': <Application ID:String>,
+    'client_secret': <Application Password:String>,
+    'tenant_id': <Tenant ID:String>
 }
 ```
 
 After encryption set your `SECRET_KEY` environment 
 variable in AWS lambda for successful decryption in Relay API.
+
+## Environment Variables
+
+- `CTR_ENTITIES_LIMIT`
+  - Restricts the maximum number of CTIM entities of each type returned in a
+  single response per each requested observable.
+  - Applies to: `Sighting`.
+  - Must be a positive integer. 
+  The recommended maximum value is 1000, 
+  if you use the value more, you may have problems with the AWS Lambda resource. 
+  - The default is 100 (if not installed or incorrect).
 
 ## Usage
 
