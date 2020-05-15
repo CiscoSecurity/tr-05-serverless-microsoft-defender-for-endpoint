@@ -12,7 +12,7 @@
  - Save credentials(Tenant ID, Application ID, Application Password) for a JWT structure.
 
 #### Permissions:
-Next permissions is required to work with this module.
+The following permissions are required to work with this module.
 
 | Permission type                    | Permission          | Permission display name     |
 |------------------------------------|---------------------|-----------------------------|
@@ -106,7 +106,7 @@ variable in AWS lambda for successful decryption in Relay API.
   - Applies to: `Sighting`.
   - Must be a positive integer. 
   The recommended maximum value is 1000, 
-  if you use the value more, you may have problems with the AWS Lambda resource. 
+  If you use a bigger value you may hit the limit of AWS Lambda resource.
   - The default is 100 (if not installed or incorrect).
 
 ## Usage
