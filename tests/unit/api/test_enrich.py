@@ -6,7 +6,6 @@ from unittest import mock
 from .utils import headers
 from tests.unit.mock_for_tests import (
     EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR,
-    EXPECTED_RESPONSE_404_ERROR,
     EXPECTED_RESPONSE_500_ERROR,
     RAW_RESPONSE_MOCK,
     EXPECTED_RESPONSE
@@ -98,26 +97,6 @@ def test_enrich_call_invalid_auth_error(get_token, route, client,
 
     assert response.status_code == HTTPStatus.OK
     assert response.get_json() == EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR
-
-
-@mock.patch('api.utils.set_headers')
-def test_enrich_call_404_error(set_headers, route, client,
-                               valid_jwt, valid_json):
-    class Session:
-        def get(self):
-            mock_response = mock.MagicMock()
-            mock_response.ok = False
-            mock_response.status_code = HTTPStatus.NOT_FOUND
-            return mock_response
-
-    set_headers.return_value = Session
-
-    response = client.post(
-        route, headers=headers(valid_jwt), json=valid_json
-    )
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.get_json() == EXPECTED_RESPONSE_404_ERROR
 
 
 @mock.patch('api.utils.set_headers')

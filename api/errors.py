@@ -28,14 +28,6 @@ class CTRInternalServerError(CTRBaseError):
         )
 
 
-class CTRNotFoundError(CTRBaseError):
-    def __init__(self):
-        super().__init__(
-            NOT_FOUND,
-            'The Microsoft Defender ATP not found the requested resource.'
-        )
-
-
 class CTRInvalidCredentialsError(CTRBaseError):
     def __init__(self):
         super().__init__(

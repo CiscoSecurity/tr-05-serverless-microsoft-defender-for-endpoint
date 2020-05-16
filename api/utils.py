@@ -5,7 +5,6 @@ from flask import request, current_app, jsonify
 from http import HTTPStatus
 
 from .errors import (CTRBadRequestError,
-                     CTRNotFoundError,
                      CTRInternalServerError,
                      CTRUnexpectedResponseError,
                      CTRInvalidCredentialsError,
@@ -125,7 +124,7 @@ def call_api(session, url, credentials):
                 f"{response.json()['error']['message']}"
             )
         if response.status_code == HTTPStatus.NOT_FOUND:
-            raise CTRNotFoundError()
+            return None
 
         if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
             raise CTRInternalServerError()
