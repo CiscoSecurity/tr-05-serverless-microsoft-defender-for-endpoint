@@ -70,5 +70,5 @@ class CTRTooManyRequestsError(CTRBaseError):
         super().__init__(
             TOO_MANY_REQUESTS,
             'Too many requests to Microsoft Defender ATP have been made. '
-            'Please try again later.'
+            'Please, try again later.'
         )
