@@ -222,6 +222,8 @@ def observe_observables():
             else:
                 raise CTRBadRequestError(f"{o_type} type is not supported.")
 
+            if not response or not response.get('value'):
+                continue
             values = response['value']
 
             values.sort(key=lambda x: x['alertCreationTime'], reverse=True)

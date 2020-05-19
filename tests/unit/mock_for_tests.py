@@ -354,16 +354,6 @@ EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR = {
     ]
 }
 
-EXPECTED_RESPONSE_404_ERROR = {
-    "errors": [
-        {
-            "code": "not found",
-            "message": "The Microsoft Defender "
-                       "ATP not found the requested resource.",
-            "type": "fatal"
-        }
-    ]
-}
 
 EXPECTED_RESPONSE_500_ERROR = {
     "errors": [
