@@ -1,14 +1,14 @@
 import json
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
-from flask import request, current_app, jsonify
+from flask import request, current_app, jsonify, g
 from http import HTTPStatus
 
-from .errors import (CTRBadRequestError,
-                     CTRInternalServerError,
-                     CTRUnexpectedResponseError,
-                     CTRInvalidCredentialsError,
+from .errors import (CTRInvalidCredentialsError,
                      CTRInvalidJWTError,
+                     CTRBadRequestError,
+                     CTRUnexpectedResponseError,
+                     CTRInternalServerError,
                      CTRTooManyRequestsError)
 
 
@@ -47,7 +47,7 @@ def get_json(schema):
     if error:
         data = None
         error = {
-            'code': 'invalid_payload',
+            'code': 'invalid payload',
             'message': f'Invalid JSON payload received. {json.dumps(error)}.',
         }
 
@@ -66,10 +66,17 @@ def jsonify_errors(error):
     error['type'] = 'fatal'
     error['code'] = error.pop('code').lower().replace('_', ' ')
 
-    return jsonify({'errors': [error]})
+    data = {'errors': [error]}
+
+    if g.get('sightings') and g.sightings:
+        data['data'] = {'sightings': g.sightings}
+
+    return jsonify(data)
 
 
-def set_headers(session, credentials):
+def set_headers(session):
+    credentials = get_jwt()
+
     body = {
         'resource': current_app.config['API_HOST'],
         'client_id': credentials.get('client_id', ''),
@@ -106,30 +113,28 @@ def set_headers(session, credentials):
             raise CTRInvalidCredentialsError()
     elif response.status_code == HTTPStatus.NOT_FOUND:
         raise CTRInvalidJWTError()
-    raise CTRUnexpectedResponseError({})
+    raise CTRUnexpectedResponseError(response.json())
 
 
-def call_api(session, url, credentials):
+def call_api(session, url, method='GET', headers=None, data=None):
     if not session.headers.get('Authorization'):
-        session = set_headers(session, credentials)
+        session = set_headers(session)
 
-    response = session.get(url)
-    if response.status_code == HTTPStatus.UNAUTHORIZED:
-        session = set_headers(session, credentials)
-        call_api(session, url, credentials)
+    methods = {
+        'GET': session.get,
+        'POST': session.post
+    }
 
+    response = methods[method](url, data=data, headers=headers)
     if not response.ok:
-        if response.status_code == HTTPStatus.BAD_REQUEST:
-            raise CTRBadRequestError(
-                f"{response.json()['error']['message']}"
-            )
-        if response.status_code == HTTPStatus.NOT_FOUND:
+        if response.status_code == HTTPStatus.UNAUTHORIZED:
+            session = set_headers(session)
+            call_api(session, url, method, headers, data)
+        elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+            raise CTRTooManyRequestsError
+        elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
+            raise CTRInternalServerError
+        else:
             return None
-
-        if response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
-            raise CTRInternalServerError()
-        if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            raise CTRTooManyRequestsError()
-        raise CTRUnexpectedResponseError(response.json())
 
     return response.json()
