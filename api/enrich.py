@@ -209,8 +209,8 @@ def observe_observables():
                 response = call_api(session, url)
 
             elif o_type == 'domain':
-                entity = 'domains'
-                url = url.format(entity=entity, value=o_value) + '/alerts'
+                entity = 'urls'
+                url = url.format(entity='domains', value=o_value) + '/alerts'
                 response = call_api(session, url)
 
             elif o_type == 'ip':
