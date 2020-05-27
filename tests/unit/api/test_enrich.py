@@ -7,6 +7,7 @@ from .utils import headers
 from tests.unit.mock_for_tests import (
     EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR,
     EXPECTED_RESPONSE_500_ERROR,
+    EXPECTED_RESPONSE_429_ERROR,
     RAW_RESPONSE_MOCK,
     EXPECTED_RESPONSE
 )
@@ -104,7 +105,10 @@ def test_enrich_call_500_error(set_headers, route, client,
                                valid_jwt, valid_json):
 
     class Session:
-        def get(self):
+        def post(self, *args, **kwargs):
+            pass
+
+        def get(self, *args, **kwargs):
             mock_response = mock.MagicMock()
             mock_response.ok = False
             mock_response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
@@ -121,17 +125,17 @@ def test_enrich_call_500_error(set_headers, route, client,
 
 
 @mock.patch('api.utils.set_headers')
-def test_enrich_call_400_error(set_headers, route, client,
+def test_enrich_call_429_error(set_headers, route, client,
                                valid_jwt, valid_json):
 
     class Session:
-        def get(self):
+        def post(self, *args, **kwargs):
+            pass
+
+        def get(self, *args, **kwargs):
             mock_response = mock.MagicMock()
             mock_response.ok = False
-            mock_response.status_code = HTTPStatus.BAD_REQUEST
-            mock_response.json = lambda: {
-                'error': {'message': 'a bad request error.'}
-            }
+            mock_response.status_code = HTTPStatus.TOO_MANY_REQUESTS
             return mock_response
 
     set_headers.return_value = Session
@@ -141,6 +145,35 @@ def test_enrich_call_400_error(set_headers, route, client,
     )
 
     assert response.status_code == HTTPStatus.OK
+    assert response.get_json() == EXPECTED_RESPONSE_429_ERROR
 
-    message = response.get_json()['errors'][0]['message']
-    assert message == 'a bad request error.'
+
+@mock.patch('api.utils.set_headers')
+def test_enrich_call_unexpected_error(set_headers, route, client,
+                                      valid_jwt):
+
+    wrong_ip_json = [
+        {
+            'type': 'ip',
+            'value': '@#$%^&'
+        },
+    ]
+
+    class Session:
+        def post(self, *args, **kwargs):
+            pass
+
+        def get(self, *args, **kwargs):
+            mock_response = mock.MagicMock()
+            mock_response.ok = False
+            mock_response.status_code = HTTPStatus.NOT_FOUND
+            return mock_response
+
+    set_headers.return_value = Session
+
+    response = client.post(
+        route, headers=headers(valid_jwt), json=wrong_ip_json
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.get_json() == {'data': {}}

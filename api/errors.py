@@ -1,8 +1,7 @@
-INVALID_ARGUMENT = 'invalid argument'
+INVALID_REQUEST = 'invalid request'
 PERMISSION_DENIED = 'permission denied'
 UNKNOWN = 'unknown'
-NOT_FOUND = 'not found'
-INTERNAL = 'internal error'
+INTERNAL_SERVER_ERROR = 'internal error'
 TOO_MANY_REQUESTS = 'too many requests'
 
 
@@ -18,14 +17,6 @@ class CTRBaseError(Exception):
         return {'type': self.type_,
                 'code': self.code,
                 'message': self.message}
-
-
-class CTRInternalServerError(CTRBaseError):
-    def __init__(self):
-        super().__init__(
-            INTERNAL,
-            'The Microsoft Defender ATP internal error.'
-        )
 
 
 class CTRInvalidCredentialsError(CTRBaseError):
@@ -46,8 +37,9 @@ class CTRInvalidJWTError(CTRBaseError):
 
 class CTRUnexpectedResponseError(CTRBaseError):
     def __init__(self, payload):
-        if payload.get('error', {}).get('message'):
-            message = payload['error']['message']
+        if payload and payload.get('error', {}).get('message'):
+            message = f'Microsoft Defender ATP returned unexpected error. ' \
+                      f'{payload["error"]["message"]}'
         else:
             message = 'Something went wrong.'
 
@@ -60,8 +52,16 @@ class CTRUnexpectedResponseError(CTRBaseError):
 class CTRBadRequestError(CTRBaseError):
     def __init__(self, error_message):
         super().__init__(
-            INVALID_ARGUMENT,
-            error_message
+            INVALID_REQUEST,
+            f'Invalid request to Microsoft Defender ATP. {error_message}'
+        )
+
+
+class CTRInternalServerError(CTRBaseError):
+    def __init__(self):
+        super().__init__(
+            INTERNAL_SERVER_ERROR,
+            'Microsoft Defender ATP internal error.'
         )
 
 

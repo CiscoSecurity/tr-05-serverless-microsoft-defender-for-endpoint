@@ -359,7 +359,31 @@ EXPECTED_RESPONSE_500_ERROR = {
     "errors": [
         {
             "code": "internal error",
-            "message": "The Microsoft Defender ATP internal error.",
+            "message": "Microsoft Defender ATP internal error.",
+            "type": "fatal"
+        }
+    ]
+}
+
+
+EXPECTED_RESPONSE_429_ERROR = {
+    "errors": [
+        {
+            "code": "too many requests",
+            "message": "Too many requests to Microsoft Defender ATP "
+                       "have been made. Please, try again later.",
+            "type": "fatal"
+        }
+    ]
+}
+
+
+EXPECTED_RESPONSE_400_ERROR = {
+    "errors": [
+        {
+            "code": "invalid request",
+            "message": "Invalid request to Microsoft Defender ATP. "
+                       "Access Token does not exist.",
             "type": "fatal"
         }
     ]

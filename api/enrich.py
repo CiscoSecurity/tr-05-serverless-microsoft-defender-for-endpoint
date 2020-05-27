@@ -1,7 +1,7 @@
 import uuid
 import requests
 from functools import partial
-from flask import Blueprint, current_app
+from flask import Blueprint, current_app, g
 
 from api.schemas import ObservableSchema
 from api.utils import (get_json, get_jwt, jsonify_data,
@@ -174,7 +174,6 @@ def deliberate_observables():
 
 @enrich_api.route('/observe/observables', methods=['POST'])
 def observe_observables():
-    credentials = get_jwt()
     observables, error = get_observables()
     if error:
         return jsonify_errors(error)
@@ -185,7 +184,7 @@ def observe_observables():
         return jsonify_data({})
 
     data = {}
-    sightings = []
+    g.sightings = []
 
     with requests.Session() as session:
         session.headers = {}
@@ -198,29 +197,29 @@ def observe_observables():
             if o_type == 'sha256':
                 entity = 'files'
                 get_file_url = url.format(entity=entity, value=o_value)
-                response = call_api(session, get_file_url, credentials)
+                response = call_api(session, get_file_url)
                 url = url.format(
                     entity=entity,
                     value=response['sha1']) + '/alerts'
-                response = call_api(session, url, credentials)
+                response = call_api(session, url)
 
             elif o_type == 'sha1':
                 entity = 'files'
                 url = url.format(entity=entity, value=o_value) + '/alerts'
-                response = call_api(session, url, credentials)
+                response = call_api(session, url)
 
             elif o_type == 'domain':
-                entity = 'domains'
-                url = url.format(entity=entity, value=o_value) + '/alerts'
-                response = call_api(session, url, credentials)
+                entity = 'urls'
+                url = url.format(entity='domains', value=o_value) + '/alerts'
+                response = call_api(session, url)
 
             elif o_type == 'ip':
                 entity = 'ips'
                 url = url.format(entity=entity, value=o_value) + '/alerts'
-                response = call_api(session, url, credentials)
+                response = call_api(session, url)
 
             else:
-                raise CTRBadRequestError(f"{o_type} type is not supported.")
+                raise CTRBadRequestError(f"'{o_type}' type is not supported.")
 
             if not response or not response.get('value'):
                 continue
@@ -236,10 +235,10 @@ def observe_observables():
             for value in values:
                 sighting = get_sighting(o_type, o_value, value,
                                         count, entity)
-                sightings.append(sighting)
+                g.sightings.append(sighting)
 
-    if sightings:
-        data['sightings'] = format_docs(sightings)
+    if g.sightings:
+        data['sightings'] = format_docs(g.sightings)
 
     return jsonify_data(data)
 
