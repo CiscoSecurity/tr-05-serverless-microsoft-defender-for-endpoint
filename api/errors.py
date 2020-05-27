@@ -37,9 +37,9 @@ class CTRInvalidJWTError(CTRBaseError):
 
 class CTRUnexpectedResponseError(CTRBaseError):
     def __init__(self, payload):
-        if payload and payload.get('error', {}).get('message'):
+        if payload and payload.get('error_description'):
             message = f'Microsoft Defender ATP returned unexpected error. ' \
-                      f'{payload["error"]["message"]}'
+                      f'Details: {payload["error_description"]}'
         else:
             message = 'Something went wrong.'
 
