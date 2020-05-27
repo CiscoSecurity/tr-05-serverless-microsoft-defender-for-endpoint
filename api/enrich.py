@@ -198,10 +198,11 @@ def observe_observables():
                 entity = 'files'
                 get_file_url = url.format(entity=entity, value=o_value)
                 response = call_api(session, get_file_url)
-                url = url.format(
-                    entity=entity,
-                    value=response['sha1']) + '/alerts'
-                response = call_api(session, url)
+                if response is not None:
+                    url = url.format(
+                        entity=entity,
+                        value=response['sha1']) + '/alerts'
+                    response = call_api(session, url)
 
             elif o_type == 'sha1':
                 entity = 'files'
