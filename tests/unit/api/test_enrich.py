@@ -88,8 +88,7 @@ def test_enrich_call_invalid_auth_error(get_token, route, client,
 
     res = mock.MagicMock()
     res.ok = False
-    res.status_code = HTTPStatus.BAD_REQUEST
-    res.json = lambda: {'error': 'unauthorized_client'}
+    res.status_code = HTTPStatus.UNAUTHORIZED
     get_token.return_value = res
 
     response = client.post(

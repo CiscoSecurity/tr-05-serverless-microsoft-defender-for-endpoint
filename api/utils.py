@@ -107,10 +107,8 @@ def set_headers(session):
         session.headers.update(**headers)
         return session
 
-    elif response.status_code == HTTPStatus.BAD_REQUEST:
-        if response.json().get('error') in (
-                'unauthorized_client', 'invalid_request'):
-            raise CTRInvalidCredentialsError()
+    elif response.status_code == HTTPStatus.UNAUTHORIZED:
+        raise CTRInvalidCredentialsError()
     elif response.status_code == HTTPStatus.NOT_FOUND:
         raise CTRInvalidJWTError()
     raise CTRUnexpectedResponseError(response.json())
