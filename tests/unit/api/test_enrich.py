@@ -58,7 +58,7 @@ def valid_json():
     ]
 
 
-@mock.patch('api.enrich.call_api')
+@mock.patch('api.client.Client.call_api')
 def test_enrich_call_success(call_api, route, client, valid_jwt,
                              valid_json):
 
@@ -99,7 +99,7 @@ def test_enrich_call_invalid_auth_error(get_token, route, client,
     assert response.get_json() == EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR
 
 
-@mock.patch('api.utils.set_headers')
+@mock.patch('api.client.Client._set_headers')
 def test_enrich_call_500_error(set_headers, route, client,
                                valid_jwt, valid_json):
 
@@ -123,7 +123,7 @@ def test_enrich_call_500_error(set_headers, route, client,
     assert response.get_json() == EXPECTED_RESPONSE_500_ERROR
 
 
-@mock.patch('api.utils.set_headers')
+@mock.patch('api.client.Client._set_headers')
 def test_enrich_call_429_error(set_headers, route, client,
                                valid_jwt, valid_json):
 
@@ -147,7 +147,7 @@ def test_enrich_call_429_error(set_headers, route, client,
     assert response.get_json() == EXPECTED_RESPONSE_429_ERROR
 
 
-@mock.patch('api.utils.set_headers')
+@mock.patch('api.client.Client._set_headers')
 def test_enrich_call_unexpected_error(set_headers, route, client,
                                       valid_jwt):
 

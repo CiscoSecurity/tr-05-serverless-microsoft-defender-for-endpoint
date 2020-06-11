@@ -1,12 +1,11 @@
 import uuid
-import requests
 from functools import partial
 from flask import Blueprint, current_app, g
 
 from api.schemas import ObservableSchema
-from api.utils import (get_json, get_jwt, jsonify_data,
-                       jsonify_errors, call_api)
+from api.utils import (get_json, get_jwt, jsonify_data, jsonify_errors)
 from api.errors import CTRBadRequestError
+from api.client import Client
 
 enrich_api = Blueprint('enrich', __name__)
 
@@ -55,7 +54,8 @@ def get_relation(origin, relation, source, related):
     }
 
 
-def get_sighting(observable_type, observable_value, data, count, entity):
+def get_sighting(client, observable_type, observable_value,
+                 data, count, entity):
     relations = []
     targets = []
 
@@ -123,14 +123,29 @@ def get_sighting(observable_type, observable_value, data, count, entity):
                 )
 
         if evidence.get('domainName'):
+            url = client.format_url('machines', data['machineId'])
+            res = client.call_api(url)
             targets.append(
                 {
                     'type': 'endpoint',
+                    'os': res['osPlatform'],
                     'observables': [
                         {
                             'type': 'hostname',
                             'value': evidence['domainName']
                         },
+                        {
+                            'type': 'user',
+                            'value': data['relatedUser']['userName']
+                        },
+                        {
+                            'type': 'ip',
+                            'value': res['lastIpAddress']
+                        },
+                        {
+                            'type': 'device',
+                            'value': data['machineId']
+                        }
                     ],
                     'observed_time': {
                         'start_time': data['firstEventTime']
@@ -186,57 +201,59 @@ def observe_observables():
     data = {}
     g.sightings = []
 
-    with requests.Session() as session:
-        session.headers = {}
-        for observable in observables:
-            o_value = observable['value']
-            o_type = observable['type']
+    credentials = get_jwt()
+    client = Client(credentials)
+    for observable in observables:
+        client.open_session()
 
-            url = current_app.config['API_URL']
+        if observable['type'] == 'sha256':
+            entity = 'files'
+            url = client.format_url(entity, observable['value'])
+            response = client.call_api(url)
+            if response is not None:
+                url = client.format_url(entity, response['sha1'], '/alerts')
+                response = client.call_api(url)
 
-            if o_type == 'sha256':
-                entity = 'files'
-                get_file_url = url.format(entity=entity, value=o_value)
-                response = call_api(session, get_file_url)
-                if response is not None:
-                    url = url.format(
-                        entity=entity,
-                        value=response['sha1']) + '/alerts'
-                    response = call_api(session, url)
+        elif observable['type'] == 'sha1':
+            entity = 'files'
+            url = client.format_url(entity, observable['value'], '/alerts')
+            response = client.call_api(url)
 
-            elif o_type == 'sha1':
-                entity = 'files'
-                url = url.format(entity=entity, value=o_value) + '/alerts'
-                response = call_api(session, url)
+        elif observable['type'] == 'domain':
+            entity = 'urls'
+            url = client.format_url('domains', observable['value'], '/alerts')
+            response = client.call_api(url)
 
-            elif o_type == 'domain':
-                entity = 'urls'
-                url = url.format(entity='domains', value=o_value) + '/alerts'
-                response = call_api(session, url)
+        elif observable['type'] == 'ip':
+            entity = 'ips'
+            url = client.format_url(entity, observable['value'], '/alerts')
+            response = client.call_api(url)
 
-            elif o_type == 'ip':
-                entity = 'ips'
-                url = url.format(entity=entity, value=o_value) + '/alerts'
-                response = call_api(session, url)
+        else:
+            raise CTRBadRequestError(
+                f"'{observable['type']}' type is not supported.")
 
-            else:
-                raise CTRBadRequestError(f"'{o_type}' type is not supported.")
+        if not response or not response.get('value'):
+            continue
+        values = response['value']
 
-            if not response or not response.get('value'):
-                continue
-            values = response['value']
+        values.sort(key=lambda x: x['alertCreationTime'], reverse=True)
 
-            values.sort(key=lambda x: x['alertCreationTime'], reverse=True)
+        count = len(values)
 
-            count = len(values)
+        if count >= current_app.config['CTR_ENTITIES_LIMIT']:
+            values = values[:current_app.config['CTR_ENTITIES_LIMIT']]
 
-            if count >= current_app.config['CTR_ENTITIES_LIMIT']:
-                values = values[:current_app.config['CTR_ENTITIES_LIMIT']]
+        for value in values:
+            sighting = get_sighting(client,
+                                    observable['type'],
+                                    observable['value'],
+                                    value,
+                                    count,
+                                    entity)
+            g.sightings.append(sighting)
 
-            for value in values:
-                sighting = get_sighting(o_type, o_value, value,
-                                        count, entity)
-                g.sightings.append(sighting)
+    client.close_session()
 
     if g.sightings:
         data['sightings'] = format_docs(g.sightings)
