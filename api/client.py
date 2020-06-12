@@ -88,7 +88,8 @@ class Client:
             self._set_headers(response)
             return
 
-        elif response.status_code == HTTPStatus.UNAUTHORIZED:
+        elif response.status_code in (HTTPStatus.UNAUTHORIZED,
+                                      HTTPStatus.BAD_REQUEST):
             raise CTRInvalidCredentialsError()
         elif response.status_code == HTTPStatus.NOT_FOUND:
             raise CTRInvalidJWTError()

@@ -13,4 +13,5 @@ def health():
     client = Client(credentials)
     client.open_session()
     client.call_api(url)
+    client.close_session()
     return jsonify_data({'status': 'ok'})
