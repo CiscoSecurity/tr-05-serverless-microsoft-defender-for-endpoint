@@ -72,7 +72,7 @@ RAW_RESPONSE_MOCK = {"value": [{
          "parentProcessCreationTime": None,
          "ipAddress": None,
          "url": None,
-         "accountName": "TestUser",
+         "accountName": "Serhii",
          "domainName": "DESKTOP-AU3IP5K",
          "userSid": "S-1-5-21-2782702779-1769723919-1938768942-1001",
          "aadUserId": None,

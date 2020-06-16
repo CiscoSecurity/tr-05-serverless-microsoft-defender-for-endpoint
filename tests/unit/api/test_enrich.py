@@ -58,11 +58,23 @@ def valid_json():
     ]
 
 
-@mock.patch('api.enrich.call_api')
+@mock.patch('api.client.Client.call_api')
 def test_enrich_call_success(call_api, route, client, valid_jwt,
                              valid_json):
 
-    call_api.return_value = RAW_RESPONSE_MOCK
+    for_target_response = {
+        'osPlatform': 'Windows10',
+        'lastIpAddress': '172.17.230.209'
+    }
+
+    exp_target_observables = [
+        {'type': 'hostname', 'value': 'DESKTOP-AU3IP5K'},
+        {'type': 'user', 'value': 'Serhii'},
+        {'type': 'ip', 'value': '172.17.230.209'},
+        {'type': 'device', 'value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'}
+    ]
+
+    call_api.side_effect = [RAW_RESPONSE_MOCK, for_target_response]
 
     response = client.post(
         route, headers=headers(valid_jwt), json=valid_json
@@ -80,11 +92,12 @@ def test_enrich_call_success(call_api, route, client, valid_jwt,
         sighting = sightings['docs'][0]
         exp_sighting = EXPECTED_RESPONSE['data']['sightings']['docs'][0]
         assert sighting.keys() == exp_sighting.keys()
+        assert exp_target_observables == sighting['targets'][0]['observables']
 
 
 @mock.patch('requests.Session.get')
-def test_enrich_call_invalid_auth_error(get_token, route, client,
-                                        valid_jwt, valid_json):
+def test_enrich_call_invalid_auth_401_error(get_token, route, client,
+                                            valid_jwt, valid_json):
 
     res = mock.MagicMock()
     res.ok = False
@@ -99,11 +112,30 @@ def test_enrich_call_invalid_auth_error(get_token, route, client,
     assert response.get_json() == EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR
 
 
-@mock.patch('api.utils.set_headers')
+@mock.patch('requests.Session.get')
+def test_enrich_call_invalid_auth_400_error(get_token, route, client,
+                                            valid_jwt, valid_json):
+
+    res = mock.MagicMock()
+    res.ok = False
+    res.status_code = HTTPStatus.BAD_REQUEST
+    get_token.return_value = res
+
+    response = client.post(
+        route, headers=headers(valid_jwt), json=valid_json
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.get_json() == EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR
+
+
+@mock.patch('requests.Session')
 def test_enrich_call_500_error(set_headers, route, client,
                                valid_jwt, valid_json):
 
     class Session:
+        headers = {'Authorization': 'ABC'}
+
         def post(self, *args, **kwargs):
             pass
 
@@ -123,11 +155,13 @@ def test_enrich_call_500_error(set_headers, route, client,
     assert response.get_json() == EXPECTED_RESPONSE_500_ERROR
 
 
-@mock.patch('api.utils.set_headers')
+@mock.patch('requests.Session')
 def test_enrich_call_429_error(set_headers, route, client,
                                valid_jwt, valid_json):
 
     class Session:
+        headers = {'Authorization': 'ABC'}
+
         def post(self, *args, **kwargs):
             pass
 
@@ -147,8 +181,8 @@ def test_enrich_call_429_error(set_headers, route, client,
     assert response.get_json() == EXPECTED_RESPONSE_429_ERROR
 
 
-@mock.patch('api.utils.set_headers')
-def test_enrich_call_unexpected_error(set_headers, route, client,
+@mock.patch('requests.Session')
+def test_enrich_call_wrong_observable(set_headers, route, client,
                                       valid_jwt):
 
     wrong_ip_json = [
@@ -159,6 +193,8 @@ def test_enrich_call_unexpected_error(set_headers, route, client,
     ]
 
     class Session:
+        headers = {'Authorization': 'ABC'}
+
         def post(self, *args, **kwargs):
             pass
 
@@ -167,6 +203,10 @@ def test_enrich_call_unexpected_error(set_headers, route, client,
             mock_response.ok = False
             mock_response.status_code = HTTPStatus.NOT_FOUND
             return mock_response
+
+        @staticmethod
+        def close():
+            pass
 
     set_headers.return_value = Session
 
