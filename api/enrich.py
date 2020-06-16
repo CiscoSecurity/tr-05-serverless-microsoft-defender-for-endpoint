@@ -141,10 +141,6 @@ def get_sighting(client, observable_type, observable_value,
                         {
                             'type': 'ip',
                             'value': res['lastIpAddress']
-                        },
-                        {
-                            'type': 'device',
-                            'value': data['machineId']
                         }
                     ],
                     'observed_time': {
