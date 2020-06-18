@@ -15,12 +15,12 @@ CTIM_SCHEMA_VERSION = {
 }
 
 
-def _get_target_from_alert(client, evidence, alert):
+def _get_target_from_alert(client, alert):
     url = client.format_url('machines', alert['machineId'])
     res = client.call_api(url)
 
     observables = [
-        {'type': 'hostname', 'value': evidence['domainName']},
+        {'type': 'hostname', 'value': alert['computerDnsName']},
         {'type': 'ip', 'value': res['lastIpAddress']}
     ]
 
@@ -43,7 +43,7 @@ def _get_target_from_ah(client, event):
     res = client.call_api(url)
 
     observables = [
-        {'type': 'hostname', 'value': event['DeviceName'].upper()},
+        {'type': 'hostname', 'value': event['DeviceName']},
         {'type': 'ip', 'value': res['lastIpAddress']}
     ]
 
@@ -78,6 +78,10 @@ def get_sightings_from_alert(client, alert, observable, count, entity):
 
     targets = []
     relations = []
+
+    if alert['computerDnsName']:
+        targets.append(_get_target_from_alert(client, alert))
+
     for evidence in alert['evidence']:
         def _related_sha1(value):
             return {'value': value, 'type': 'sha1'}
@@ -144,9 +148,6 @@ def get_sightings_from_alert(client, alert, observable, count, entity):
                         _related_sha256(evidence['sha256'])
                     )
                 )
-
-        if evidence.get('domainName'):
-            targets.append(_get_target_from_alert(client, evidence, alert))
 
     sighting['targets'] = targets
     sighting['relations'] = relations
