@@ -396,7 +396,7 @@ def _get_file(event, client):
                 source={'type': 'file_name',
                         'value': event['FileName']},
                 related={'type': 'sha256',
-                         'value': event['sha256']}
+                         'value': event['SHA256']}
             ))
         else:
             url = client.format_url(
