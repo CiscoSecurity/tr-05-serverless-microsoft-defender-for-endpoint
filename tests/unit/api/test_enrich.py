@@ -68,10 +68,9 @@ def test_enrich_call_success(call_api, route, client, valid_jwt,
     }
 
     exp_target_observables = [
-        {'type': 'hostname', 'value': 'DESKTOP-AU3IP5K'},
-        {'type': 'user', 'value': 'Serhii'},
+        {'type': 'hostname', 'value': 'desktop-au3ip5k'},
         {'type': 'ip', 'value': '172.17.230.209'},
-        {'type': 'device', 'value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'}
+        {'type': 'user', 'value': 'Serhii'}
     ]
 
     call_api.side_effect = [RAW_RESPONSE_MOCK, for_target_response]

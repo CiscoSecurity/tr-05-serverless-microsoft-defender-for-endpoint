@@ -59,6 +59,38 @@ def get_sighting(client, observable_type, observable_value,
     relations = []
     targets = []
 
+    if data['computerDnsName']:
+        url = client.format_url('machines', data['machineId'])
+        res = client.call_api(url)
+        observables = [
+            {
+                'type': 'hostname',
+                'value': data['computerDnsName']
+            },
+            {
+                'type': 'ip',
+                'value': res['lastIpAddress']
+            }
+        ]
+        if data['relatedUser'] and data['relatedUser'].get('userName'):
+            observables.append(
+                {
+                    'type': 'user',
+                    'value': data['relatedUser']['userName']
+                }
+            )
+
+        targets.append(
+            {
+                'type': 'endpoint',
+                'os': res['osPlatform'],
+                'observables': observables,
+                'observed_time': {
+                    'start_time': data['firstEventTime']
+                }
+            }
+        )
+
     for evidence in data.get('evidence', []):
 
         def _related_sha1(value):
@@ -121,33 +153,6 @@ def get_sighting(client, observable_type, observable_value,
                         _related_sha256(evidence['sha256'])
                     )
                 )
-
-        if evidence.get('domainName'):
-            url = client.format_url('machines', data['machineId'])
-            res = client.call_api(url)
-            targets.append(
-                {
-                    'type': 'endpoint',
-                    'os': res['osPlatform'],
-                    'observables': [
-                        {
-                            'type': 'hostname',
-                            'value': evidence['domainName']
-                        },
-                        {
-                            'type': 'user',
-                            'value': data['relatedUser']['userName']
-                        },
-                        {
-                            'type': 'ip',
-                            'value': res['lastIpAddress']
-                        }
-                    ],
-                    'observed_time': {
-                        'start_time': data['firstEventTime']
-                    }
-                }
-            )
 
     return {
         'id': f'transient:{uuid.uuid4()}',
