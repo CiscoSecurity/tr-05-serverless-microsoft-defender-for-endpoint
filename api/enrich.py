@@ -1,4 +1,4 @@
-import uuid
+import json
 from functools import partial
 from flask import Blueprint, current_app, g
 
@@ -6,21 +6,12 @@ from api.schemas import ObservableSchema
 from api.utils import (get_json, get_jwt, jsonify_data, jsonify_errors)
 from api.errors import CTRBadRequestError
 from api.client import Client
+from api.mapping import get_sightings_from_ah, get_sightings_from_alert
 
 enrich_api = Blueprint('enrich', __name__)
 
 
 get_observables = partial(get_json, schema=ObservableSchema(many=True))
-
-
-severity = {
-    # 'None',
-    'Informational': 'Info',
-    'Low': 'Low',
-    'Medium': 'Medium',
-    'High': 'High',
-    'UnSpecified': 'Unknown'
-}
 
 
 def format_docs(docs):
@@ -45,135 +36,60 @@ def group_observables(relay_input):
     return result
 
 
-def get_relation(origin, relation, source, related):
-    return {
-        'origin': origin,
-        'relation': relation,
-        'source': source,
-        'related': related
+def get_alert(client, observable):
+    if observable['type'] == 'sha256':
+        entity = 'files'
+        url = client.format_url(entity, observable['value'])
+        response = client.call_api(url)
+        if response is not None:
+            url = client.format_url(entity, response['sha1'], '/alerts')
+            response = client.call_api(url)
+
+    elif observable['type'] == 'sha1':
+        entity = 'files'
+        url = client.format_url(entity, observable['value'], '/alerts')
+        response = client.call_api(url)
+
+    elif observable['type'] == 'domain':
+        entity = 'urls'
+        url = client.format_url('domains', observable['value'], '/alerts')
+        response = client.call_api(url)
+
+    elif observable['type'] == 'ip':
+        entity = 'ips'
+        url = client.format_url(entity, observable['value'], '/alerts')
+        response = client.call_api(url)
+
+    else:
+        raise CTRBadRequestError(
+            f"'{observable['type']}' type is not supported.")
+    return response, entity
+
+
+def call_advanced_hunting(client, o_value, o_type, limit):
+    queries = {
+        'sha1': "DeviceFileEvents "
+                "| where SHA1 == '{o_value}' "
+                "| limit {limit}",
+        'sha256': "DeviceFileEvents "
+                  "| where SHA256 == '{o_value}' "
+                  "| limit {limit}",
+        'md5': "DeviceFileEvents "
+               "| where MD5 == '{o_value}' "
+               "| limit {limit}",
+        'ip': "DeviceNetworkEvents "
+              "| where RemoteIP == '{o_value}' "
+              "| limit {limit}",
+        'domain': "DeviceNetworkEvents "
+                  "| where RemoteUrl == '{o_value}' "
+                  "| limit {limit}"
     }
-
-
-def get_sighting(client, observable_type, observable_value,
-                 data, count, entity):
-    relations = []
-    targets = []
-
-    for evidence in data.get('evidence', []):
-
-        def _related_sha1(value):
-            return {'value': value, 'type': 'sha1'}
-
-        def _related_sha256(value):
-            return {'value': value, 'type': 'sha256'}
-
-        if evidence.get('parentProcessId'):
-            for e in data['evidence']:
-                if e['processId'] == evidence['parentProcessId']:
-                    relations.append(
-                        get_relation(
-                            data['detectionSource'],
-                            'Injected_Into',
-                            {'value': evidence['fileName'],
-                             'type': 'file_name'},
-                            {'value': e['fileName'], 'type': 'file_name'}
-                        )
-                    )
-
-        if evidence.get('fileName'):
-            if evidence.get('sha1'):
-                relations.append(
-                    get_relation(
-                        data['detectionSource'],
-                        'File_Name_Of',
-                        {'value': evidence['fileName'], 'type': 'file_name'},
-                        _related_sha1(evidence['sha1'])
-                    )
-                )
-
-            if evidence.get('sha256'):
-                relations.append(
-                    get_relation(
-                        data['detectionSource'],
-                        'File_Name_Of',
-                        {'value': evidence['fileName'], 'type': 'file_name'},
-                        _related_sha256(evidence['sha256'])
-                    )
-                )
-
-        if evidence.get('filePath'):
-            if evidence.get('sha1'):
-                relations.append(
-                    get_relation(
-                        data['detectionSource'],
-                        'File_Path_Of',
-                        {'value': evidence['filePath'], 'type': 'file_path'},
-                        _related_sha1(evidence['sha1'])
-                    )
-                )
-
-            if evidence.get('sha256'):
-                relations.append(
-                    get_relation(
-                        data['detectionSource'],
-                        'File_Path_Of',
-                        {'value': evidence['filePath'], 'type': 'file_path'},
-                        _related_sha256(evidence['sha256'])
-                    )
-                )
-
-        if evidence.get('domainName'):
-            url = client.format_url('machines', data['machineId'])
-            res = client.call_api(url)
-            targets.append(
-                {
-                    'type': 'endpoint',
-                    'os': res['osPlatform'],
-                    'observables': [
-                        {
-                            'type': 'hostname',
-                            'value': evidence['domainName']
-                        },
-                        {
-                            'type': 'user',
-                            'value': data['relatedUser']['userName']
-                        },
-                        {
-                            'type': 'ip',
-                            'value': res['lastIpAddress']
-                        }
-                    ],
-                    'observed_time': {
-                        'start_time': data['firstEventTime']
-                    }
-                }
-            )
-
-    return {
-        'id': f'transient:{uuid.uuid4()}',
-        'type': 'sighting',
-        'count': count,
-        'internal': True,
-        'confidence': 'High',
-        'source': 'Microsoft Defender ATP',
-        'source_uri': f'https://securitycenter.windows.com/'
-                      f'{entity}/{observable_value}/alerts',
-        'observables': [
-            {
-                'value': observable_value,
-                'type': observable_type
-            }
-        ],
-        'schema_version': current_app.config['CTIM_SCHEMA_VERSION'],
-        'sensor': 'endpoint',  # detectionSource
-        'observed_time': {'start_time': data['firstEventTime']},
-        'title': data['title'],
-        'description': data['description'],
-        'severity': severity[data['severity']] or 'None',
-        'timestamp': data['lastUpdateTime'],
-        'targets': targets,
-        'relations': relations
-    }
+    q = queries[o_type].format(o_value=o_value, limit=limit)
+    query = json.dumps(
+        {'Query': q}
+    ).encode("utf-8")
+    url = 'https://api.securitycenter.windows.com/api/advancedqueries/run'
+    return client.call_api(url, 'POST', query)
 
 
 @enrich_api.route('/deliberate/observables', methods=['POST'])
@@ -202,51 +118,37 @@ def observe_observables():
     for observable in observables:
         client.open_session()
 
-        if observable['type'] == 'sha256':
-            entity = 'files'
-            url = client.format_url(entity, observable['value'])
-            response = client.call_api(url)
-            if response is not None:
-                url = client.format_url(entity, response['sha1'], '/alerts')
-                response = client.call_api(url)
-
-        elif observable['type'] == 'sha1':
-            entity = 'files'
-            url = client.format_url(entity, observable['value'], '/alerts')
-            response = client.call_api(url)
-
-        elif observable['type'] == 'domain':
-            entity = 'urls'
-            url = client.format_url('domains', observable['value'], '/alerts')
-            response = client.call_api(url)
-
-        elif observable['type'] == 'ip':
-            entity = 'ips'
-            url = client.format_url(entity, observable['value'], '/alerts')
-            response = client.call_api(url)
-
-        else:
-            raise CTRBadRequestError(
-                f"'{observable['type']}' type is not supported.")
+        response, entity = get_alert(client, observable)
 
         if not response or not response.get('value'):
-            continue
-        values = response['value']
+            alerts = []
+        else:
+            alerts = response['value']
+            alerts.sort(key=lambda x: x['alertCreationTime'], reverse=True)
 
-        values.sort(key=lambda x: x['alertCreationTime'], reverse=True)
-
-        count = len(values)
+        count = len(alerts)
 
         if count >= current_app.config['CTR_ENTITIES_LIMIT']:
-            values = values[:current_app.config['CTR_ENTITIES_LIMIT']]
+            alerts = alerts[:current_app.config['CTR_ENTITIES_LIMIT']]
+            events = []
+        else:
+            events = call_advanced_hunting(
+                client,
+                observable['value'], observable['type'],
+                current_app.config['CTR_ENTITIES_LIMIT'] - count)['Results']
+            count = count + len(events)
 
-        for value in values:
-            sighting = get_sighting(client,
-                                    observable['type'],
-                                    observable['value'],
-                                    value,
-                                    count,
-                                    entity)
+        for alert in alerts:
+            sighting = get_sightings_from_alert(client, alert,
+                                                observable, count, entity)
+
+            g.sightings.append(sighting)
+
+        for event in events:
+            sighting = get_sightings_from_ah(client,
+                                             event,
+                                             observable,
+                                             count)
             g.sightings.append(sighting)
 
     client.close_session()
