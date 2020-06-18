@@ -314,7 +314,7 @@ EXPECTED_RESPONSE = {
               "observables": [
                 {
                   "type": "hostname",
-                  "value": "DESKTOP-AU3IP5K"
+                  "value": "desktop-au3ip5k"
                 }
               ],
               "observed_time": {
