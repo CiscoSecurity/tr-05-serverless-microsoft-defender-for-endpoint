@@ -81,342 +81,382 @@ RAW_RESPONSE_MOCK = {"value": [{
 }, ]}
 
 EXPECTED_RESPONSE = {
-    'data': {
-        'sightings': {
-            'count': 2,
-            'docs': [
-                {'type': 'sighting',
-                 'confidence': 'High',
-                 'internal': True,
-                 'source': 'Microsoft Defender ATP',
-                 'sensor': 'endpoint',
-                 'schema_version': '1.0.16',
-                 'targets': [],
-                 'relations': [
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {
-                          'value': 'Ransomware.WannaCry.zip',
-                          'type': 'file_name'
-                      },
-                      'related': {
-                          'value': 'ba5de52939cb809eae10fdbb7fac47095a9599a7',
-                          'type': 'sha1'
-                      }},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {
-                          'value': 'Ransomware.WannaCry.zip',
-                          'type': 'file_name'
-                      },
-                      'related': {
-                          'value': '707a9f323556179571bc832e34fa592066b1d5f2cac4a7426fe163597e3e618a',
-                          'type': 'sha256'
-                      }},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {
-                          'value': 'C:\\Users\\Serhii\\Downloads',
-                          'type': 'file_path'
-                      },
-                      'related': {
-                          'value': 'ba5de52939cb809eae10fdbb7fac47095a9599a7',
-                          'type': 'sha1'
-                      }},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {'value': 'C:\\Users\\Serhii\\Downloads',
-                                 'type': 'file_path'}, 'related': {
-                         'value': '707a9f323556179571bc832e34fa592066b1d5f2cac4a7426fe163597e3e618a',
-                         'type': 'sha256'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'Dino.zip', 'type': 'file_name'},
-                      'related': {
-                          'value': 'e6c442016aa3c25c54e32cf9637a0b79ebaaa5e1',
-                          'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'Dino.zip', 'type': 'file_name'},
-                      'related': {
-                          'value': '66fb3bfdb601414cd35623d3dab811215f8dfa08c4189df588872fb543568684',
-                          'type': 'sha256'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {'value': 'C:\\Users\\Serhii\\Downloads',
-                                 'type': 'file_path'}, 'related': {
-                         'value': 'e6c442016aa3c25c54e32cf9637a0b79ebaaa5e1',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {'value': 'C:\\Users\\Serhii\\Downloads',
-                                 'type': 'file_path'}, 'related': {
-                         'value': '66fb3bfdb601414cd35623d3dab811215f8dfa08c4189df588872fb543568684',
-                         'type': 'sha256'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'AntiExe.A.zip',
-                                 'type': 'file_name'},
-                      'related': {
-                          'value': '8fa3b60ea7b526b46ca22fa6544443a670a7de46',
-                          'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'AntiExe.A.zip',
-                                 'type': 'file_name'},
-                      'related': {
-                          'value': '93861a8aa9a4f42489d029c64bc0599c208971891c70a9b2192b60e20c57d3bc',
-                          'type': 'sha256'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {'value': 'C:\\Users\\Serhii\\Downloads',
-                                 'type': 'file_path'}, 'related': {
-                         'value': '8fa3b60ea7b526b46ca22fa6544443a670a7de46',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {'value': 'C:\\Users\\Serhii\\Downloads',
-                                 'type': 'file_path'}, 'related': {
-                         'value': '93861a8aa9a4f42489d029c64bc0599c208971891c70a9b2192b60e20c57d3bc',
-                         'type': 'sha256'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'Ransomware.WannaCry[1].zip',
-                                 'type': 'file_name'}, 'related': {
-                         'value': 'ba5de52939cb809eae10fdbb7fac47095a9599a7',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {
-                          'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\#!001\\MicrosoftEdge\\Cache\\5WDW06DN',
-                          'type': 'file_path'}, 'related': {
-                         'value': 'ba5de52939cb809eae10fdbb7fac47095a9599a7',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'AntiExe.A[1].zip',
-                                 'type': 'file_name'},
-                      'related': {
-                          'value': '8fa3b60ea7b526b46ca22fa6544443a670a7de46',
-                          'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {
-                          'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\#!001\\MicrosoftEdge\\Cache\\ITPWIEMR',
-                          'type': 'file_path'}, 'related': {
-                         'value': '8fa3b60ea7b526b46ca22fa6544443a670a7de46',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'Dino[1].zip', 'type': 'file_name'},
-                      'related': {
-                          'value': 'e6c442016aa3c25c54e32cf9637a0b79ebaaa5e1',
-                          'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {
-                          'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\#!001\\MicrosoftEdge\\Cache\\ITPWIEMR',
-                          'type': 'file_path'}, 'related': {
-                         'value': 'e6c442016aa3c25c54e32cf9637a0b79ebaaa5e1',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'APT34.zip', 'type': 'file_name'},
-                      'related': {
-                          'value': '3c61a2ac4276155094ff7f77d1d6400197ff2d93',
-                          'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'APT34.zip', 'type': 'file_name'},
-                      'related': {
-                          'value': '4698791decea6748d82a591eb519cff3ff178e5f168c2a9f4fe70468e267b369',
-                          'type': 'sha256'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {'value': 'C:\\Users\\Serhii\\Downloads',
-                                 'type': 'file_path'}, 'related': {
-                         'value': '3c61a2ac4276155094ff7f77d1d6400197ff2d93',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {'value': 'C:\\Users\\Serhii\\Downloads',
-                                 'type': 'file_path'}, 'related': {
-                         'value': '4698791decea6748d82a591eb519cff3ff178e5f168c2a9f4fe70468e267b369',
-                         'type': 'sha256'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'APT34[1].zip', 'type': 'file_name'},
-                      'related': {
-                          'value': '3c61a2ac4276155094ff7f77d1d6400197ff2d93',
-                          'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {
-                          'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\#!001\\MicrosoftEdge\\Cache\\ITPWIEMR',
-                          'type': 'file_path'}, 'related': {
-                         'value': '3c61a2ac4276155094ff7f77d1d6400197ff2d93',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'Ransomware.Rex.zip',
-                                 'type': 'file_name'}, 'related': {
-                         'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'Ransomware.Rex.zip',
-                                 'type': 'file_name'}, 'related': {
-                         'value': '32856e998ff1a8b89e30c9658721595d403ff0eece70dc803a36d1939e429f8d',
-                         'type': 'sha256'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {'value': 'C:\\Users\\Serhii\\Downloads',
-                                 'type': 'file_path'}, 'related': {
-                         'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {'value': 'C:\\Users\\Serhii\\Downloads',
-                                 'type': 'file_path'}, 'related': {
-                         'value': '32856e998ff1a8b89e30c9658721595d403ff0eece70dc803a36d1939e429f8d',
-                         'type': 'sha256'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'VBS.Hopper.zip',
-                                 'type': 'file_name'},
-                      'related': {
-                          'value': '0b109ff594e05cc8ac137d51bcd540ebe27afc0c',
-                          'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'VBS.Hopper.zip',
-                                 'type': 'file_name'},
-                      'related': {
-                          'value': '805585d028fa2466846ab544431f0d4c6c7de4d8ef31620af65b537fbd66990b',
-                          'type': 'sha256'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {'value': 'C:\\Users\\Serhii\\Downloads',
-                                 'type': 'file_path'}, 'related': {
-                         'value': '0b109ff594e05cc8ac137d51bcd540ebe27afc0c',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {'value': 'C:\\Users\\Serhii\\Downloads',
-                                 'type': 'file_path'}, 'related': {
-                         'value': '805585d028fa2466846ab544431f0d4c6c7de4d8ef31620af65b537fbd66990b',
-                         'type': 'sha256'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'VBS.Hopper[1].zip',
-                                 'type': 'file_name'}, 'related': {
-                         'value': '0b109ff594e05cc8ac137d51bcd540ebe27afc0c',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {
-                          'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\#!001\\MicrosoftEdge\\Cache\\ITPWIEMR',
-                          'type': 'file_path'}, 'related': {
-                         'value': '0b109ff594e05cc8ac137d51bcd540ebe27afc0c',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Name_Of',
-                      'source': {'value': 'Ransomware.Rex[1].zip',
-                                 'type': 'file_name'}, 'related': {
-                         'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6',
-                         'type': 'sha1'}},
-                     {'origin': 'WindowsDefenderAv',
-                      'relation': 'File_Path_Of',
-                      'source': {
-                          'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\#!001\\MicrosoftEdge\\Cache\\HCRKS966',
-                          'type': 'file_path'}, 'related': {
-                         'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6',
-                         'type': 'sha1'}}],
-                 'id': 'transient-sighting:0866fbfe-a311-40c2-b51d-5fa5d898d935',
-                 'count': 2, 'observables': [{'type': 'sha1',
-                                              'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6'}],
-                 'observed_time': {
-                     'start_time': '2020-05-28T06:52:39.8400379Z'},
-                 'title': "'Vigorf' malware was detected",
-                 'description': 'Malware and unwanted software are undesirable applications that perform annoying, disruptive, or harmful actions on affected machines. Some of these undesirable applications can replicate and spread from one machine to another. Others are able to receive commands from remote attackers and perform activities associated with cyber attacks.\n\nThis detection might indicate that the malware was stopped from delivering its payload. However, it is prudent to check the machine for signs of infection.',
-                 'severity': 'Info', 'timestamp': '2020-05-31T10:44:12.9Z',
-                 'source_uri': 'https://securitycenter.windows.com/files/0d549631690ea297c25b2a4e133cacb8a87b97c6/alerts'},
-                {'type': 'sighting', 'confidence': 'High', 'internal': True,
-                 'source': 'Microsoft Defender ATP', 'sensor': 'endpoint',
-                 'schema_version': '1.0.16', 'relations': [
-                    {'origin': 'Microsoft Defender ATP',
-                     'relation': 'File_Name_Of',
-                     'source': {'type': 'file_name',
-                                'value': 'Ransomware.Rex[1].zip'},
-                     'related': {'type': 'sha1',
-                                 'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6'}},
-                    {'origin': 'Microsoft Defender ATP',
-                     'relation': 'File_Name_Of',
-                     'source': {'type': 'file_name',
-                                'value': 'Ransomware.Rex[1].zip'},
-                     'related': {'type': 'sha256',
-                                 'value': '32856e998ff1a8b89e30c9658721595d403ff0eece70dc803a36d1939e429f8d'}},
-                    {'origin': 'Microsoft Defender ATP',
-                     'relation': 'File_Name_Of',
-                     'source': {'type': 'file_name',
-                                'value': 'Ransomware.Rex[1].zip'},
-                     'related': {'type': 'md5',
-                                 'value': '50188823168525455c273c07d8457b87'}},
-                    {'origin': 'Microsoft Defender ATP',
-                     'relation': 'File_Path_Of',
-                     'source': {'type': 'file_path',
-                                'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\#!001\\MicrosoftEdge\\Cache\\HCRKS966\\Ransomware.Rex[1].zip'},
-                     'related': {'type': 'file_name',
-                                 'value': 'Ransomware.Rex[1].zip'}},
-                    {'origin': 'Microsoft Defender ATP',
-                     'relation': 'Related_To',
-                     'source': {'type': 'file_name',
-                                'value': 'MicrosoftEdgeCP.exe'},
-                     'related': {'type': 'file_name',
-                                 'value': 'Ransomware.Rex[1].zip'}},
-                    {'origin': 'Microsoft Defender ATP',
-                     'relation': 'File_Name_Of',
-                     'source': {'type': 'file_name',
-                                'value': 'MicrosoftEdgeCP.exe'},
-                     'related': {'type': 'sha1',
-                                 'value': 'ecb05717e416d965255387f4edc196889aa12c67'}},
-                    {'origin': 'Microsoft Defender ATP',
-                     'relation': 'File_Name_Of',
-                     'source': {'type': 'file_name',
-                                'value': 'MicrosoftEdgeCP.exe'},
-                     'related': {'type': 'sha256',
-                                 'value': 'ee7174ee353e7d29ce17d29d66411b3623c39d9dec3f439e35af47a7e7a7c895'}},
-                    {'origin': 'Microsoft Defender ATP',
-                     'relation': 'File_Name_Of',
-                     'source': {'type': 'file_name',
-                                'value': 'MicrosoftEdgeCP.exe'},
-                     'related': {'type': 'md5',
-                                 'value': '0e954887fc791f668ce388f89bc3d6c6'}},
-                    {'origin': 'Microsoft Defender ATP',
-                     'relation': 'File_Path_Of',
-                     'source': {'type': 'file_path',
-                                'value': 'c:\\windows\\system32\\microsoftedgecp.exe'},
-                     'related': {'type': 'file_name',
-                                 'value': 'MicrosoftEdgeCP.exe'}},
-                    {'origin': 'Microsoft Defender ATP',
-                     'relation': 'Related_To',
-                     'source': {'type': 'file_name',
-                                'value': 'MicrosoftEdgeCP.exe'},
-                     'related': {'type': 'file_name',
-                                 'value': 'svchost.exe'}}],
-                 'targets': [{'type': 'endpoint', 'os': 'Windows10',
-                              'observables': [
-                                  {'type': 'hostname',
-                                   'value': 'DESKTOP-AU3IP5K'},
-                                  {'type': 'ip', 'value': '10.0.2.15'}],
-                              'observed_time': {
-                                  'start_time': '2020-05-28T07:06:58.4340352Z'}}],
-                 'id': 'transient-sighting:ded6f089-ea5e-401d-a0ba-aed6457d4ba1',
-                 'count': 2, 'observables': [{'type': 'sha1',
-                                              'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6'}],
-                 'observed_time': {
-                     'start_time': '2020-05-28T07:06:58.4340352Z'}}]}
-    }
+    'data': {'sightings': {'count': 2, 'docs': [{
+        'type': 'sighting',
+        'confidence': 'High',
+        'internal': True,
+        'source': 'Microsoft Defender ATP',
+        'sensor': 'endpoint',
+        'schema_version': '1.0.16',
+        'targets': [],
+        'relations': [{
+            'origin': 'WindowsDefenderAv',
+            'relation': 'File_Name_Of',
+            'source': {
+                'value': 'Ransomware.WannaCry.zip', 'type': 'file_name'},
+            'related': {
+                'value': 'ba5de52939cb809eae10fdbb7fac47095a9599a7',
+                'type': 'sha1'
+            }},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {
+                 'value': 'Ransomware.WannaCry.zip',
+                 'type': 'file_name'
+             },
+             'related': {
+                 'value': '707a9f323556179571bc832e34fa5920'
+                          '66b1d5f2cac4a7426fe163597e3e618a',
+                 'type': 'sha256'
+             }},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {
+                 'value': 'C:\\Users\\Serhii\\Downloads',
+                 'type': 'file_path'
+             },
+             'related': {
+                 'value': 'ba5de52939cb809eae10fdbb7fac47095a9599a7',
+                 'type': 'sha1'
+             }},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {'value': 'C:\\Users\\Serhii\\Downloads',
+                        'type': 'file_path'}, 'related': {
+                'value': '707a9f323556179571bc832e34fa5920'
+                         '66b1d5f2cac4a7426fe163597e3e618a',
+                'type': 'sha256'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'Dino.zip', 'type': 'file_name'},
+             'related': {
+                 'value': 'e6c442016aa3c25c54e32cf9637a0b79ebaaa5e1',
+                 'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'Dino.zip', 'type': 'file_name'},
+             'related': {
+                 'value': '66fb3bfdb601414cd35623d3dab81121'
+                          '5f8dfa08c4189df588872fb543568684',
+                 'type': 'sha256'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {'value': 'C:\\Users\\Serhii\\Downloads',
+                        'type': 'file_path'}, 'related': {
+                'value': 'e6c442016aa3c25c54e32cf9637a0b79ebaaa5e1',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {'value': 'C:\\Users\\Serhii\\Downloads',
+                        'type': 'file_path'}, 'related': {
+                'value': '66fb3bfdb601414cd35623d3dab81121'
+                         '5f8dfa08c4189df588872fb543568684',
+                'type': 'sha256'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'AntiExe.A.zip',
+                        'type': 'file_name'},
+             'related': {
+                 'value': '8fa3b60ea7b526b46ca22fa6544443a670a7de46',
+                 'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'AntiExe.A.zip',
+                        'type': 'file_name'},
+             'related': {
+                 'value': '93861a8aa9a4f42489d029c64bc0599c'
+                          '208971891c70a9b2192b60e20c57d3bc',
+                 'type': 'sha256'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {'value': 'C:\\Users\\Serhii\\Downloads',
+                        'type': 'file_path'}, 'related': {
+                'value': '8fa3b60ea7b526b46ca22fa6544443a670a7de46',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {'value': 'C:\\Users\\Serhii\\Downloads',
+                        'type': 'file_path'}, 'related': {
+                'value': '93861a8aa9a4f42489d029c64bc0599c'
+                         '208971891c70a9b2192b60e20c57d3bc',
+                'type': 'sha256'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'Ransomware.WannaCry[1].zip',
+                        'type': 'file_name'}, 'related': {
+                'value': 'ba5de52939cb809eae10fdbb7fac47095a9599a7',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {
+                 'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\'
+                          'Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\'
+                          '#!001\\MicrosoftEdge\\Cache\\5WDW06DN',
+                 'type': 'file_path'}, 'related': {
+                'value': 'ba5de52939cb809eae10fdbb7fac47095a9599a7',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'AntiExe.A[1].zip',
+                        'type': 'file_name'},
+             'related': {
+                 'value': '8fa3b60ea7b526b46ca22fa6544443a670a7de46',
+                 'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {
+                 'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\'
+                          'Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\'
+                          '#!001\\MicrosoftEdge\\Cache\\ITPWIEMR',
+                 'type': 'file_path'}, 'related': {
+                'value': '8fa3b60ea7b526b46ca22fa6544443a670a7de46',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'Dino[1].zip', 'type': 'file_name'},
+             'related': {
+                 'value': 'e6c442016aa3c25c54e32cf9637a0b79ebaaa5e1',
+                 'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {
+                 'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\'
+                          'Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\'
+                          '#!001\\MicrosoftEdge\\Cache\\ITPWIEMR',
+                 'type': 'file_path'}, 'related': {
+                'value': 'e6c442016aa3c25c54e32cf9637a0b79ebaaa5e1',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'APT34.zip', 'type': 'file_name'},
+             'related': {
+                 'value': '3c61a2ac4276155094ff7f77d1d6400197ff2d93',
+                 'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'APT34.zip', 'type': 'file_name'},
+             'related': {
+                 'value': '4698791decea6748d82a591eb519cff3'
+                          'ff178e5f168c2a9f4fe70468e267b369',
+                 'type': 'sha256'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {'value': 'C:\\Users\\Serhii\\Downloads',
+                        'type': 'file_path'}, 'related': {
+                'value': '3c61a2ac4276155094ff7f77d1d6400197ff2d93',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {'value': 'C:\\Users\\Serhii\\Downloads',
+                        'type': 'file_path'}, 'related': {
+                'value': '4698791decea6748d82a591eb519cff3'
+                         'ff178e5f168c2a9f4fe70468e267b369',
+                'type': 'sha256'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'APT34[1].zip', 'type': 'file_name'},
+             'related': {
+                 'value': '3c61a2ac4276155094ff7f77d1d6400197ff2d93',
+                 'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {
+                 'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\'
+                          'Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\'
+                          '#!001\\MicrosoftEdge\\Cache\\ITPWIEMR',
+                 'type': 'file_path'}, 'related': {
+                'value': '3c61a2ac4276155094ff7f77d1d6400197ff2d93',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'Ransomware.Rex.zip',
+                        'type': 'file_name'}, 'related': {
+                'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'Ransomware.Rex.zip',
+                        'type': 'file_name'}, 'related': {
+                'value': '32856e998ff1a8b89e30c9658721595d'
+                         '403ff0eece70dc803a36d1939e429f8d',
+                'type': 'sha256'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {'value': 'C:\\Users\\Serhii\\Downloads',
+                        'type': 'file_path'}, 'related': {
+                'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {'value': 'C:\\Users\\Serhii\\Downloads',
+                        'type': 'file_path'}, 'related': {
+                'value': '32856e998ff1a8b89e30c9658721595d'
+                         '403ff0eece70dc803a36d1939e429f8d',
+                'type': 'sha256'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'VBS.Hopper.zip',
+                        'type': 'file_name'},
+             'related': {
+                 'value': '0b109ff594e05cc8ac137d51bcd540ebe27afc0c',
+                 'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'VBS.Hopper.zip',
+                        'type': 'file_name'},
+             'related': {
+                 'value': '805585d028fa2466846ab544431f0d4c'
+                          '6c7de4d8ef31620af65b537fbd66990b',
+                 'type': 'sha256'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {'value': 'C:\\Users\\Serhii\\Downloads',
+                        'type': 'file_path'}, 'related': {
+                'value': '0b109ff594e05cc8ac137d51bcd540ebe27afc0c',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {'value': 'C:\\Users\\Serhii\\Downloads',
+                        'type': 'file_path'}, 'related': {
+                'value': '805585d028fa2466846ab544431f0d4c'
+                         '6c7de4d8ef31620af65b537fbd66990b',
+                'type': 'sha256'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'VBS.Hopper[1].zip',
+                        'type': 'file_name'}, 'related': {
+                'value': '0b109ff594e05cc8ac137d51bcd540ebe27afc0c',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {
+                 'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\'
+                          'Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\'
+                          '#!001\\MicrosoftEdge\\Cache\\ITPWIEMR',
+                 'type': 'file_path'}, 'related': {
+                'value': '0b109ff594e05cc8ac137d51bcd540ebe27afc0c',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Name_Of',
+             'source': {'value': 'Ransomware.Rex[1].zip',
+                        'type': 'file_name'}, 'related': {
+                'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6',
+                'type': 'sha1'}},
+            {'origin': 'WindowsDefenderAv',
+             'relation': 'File_Path_Of',
+             'source': {
+                 'value': 'C:\\Users\\Serhii\\AppData\\Local\\Packages\\'
+                          'Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\'
+                          '#!001\\MicrosoftEdge\\Cache\\HCRKS966',
+                 'type': 'file_path'}, 'related': {
+                'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6',
+                'type': 'sha1'}}],
+        'id': 'transient-sighting:0866fbfe-a311-40c2-b51d-5fa5d898d935',
+        'count': 2,
+        'observables': [
+            {'type': 'sha1',
+             'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6'}],
+        'observed_time': {
+            'start_time': '2020-05-28T06:52:39.8400379Z'},
+        'title': "'Vigorf' malware was detected",
+        'description': 'Malware and unwanted software are undesirable '
+                       'applications that perform annoying, disruptive, '
+                       'or harmful actions on affected machines. '
+                       'Some of these undesirable applications can '
+                       'replicate and spread from one machine to another. '
+                       'Others are able to receive commands from remote '
+                       'attackers and perform activities associated with '
+                       'cyber attacks.\n\nThis detection might indicate '
+                       'that the malware was stopped from delivering its '
+                       'payload. However, it is prudent to check the '
+                       'machine for signs of infection.',
+        'severity': 'Info', 'timestamp': '2020-05-31T10:44:12.9Z',
+        'source_uri': 'https://securitycenter.windows.com/files/'
+                      '0d549631690ea297c25b2a4e133cacb8a87b97c6/alerts'},
+        {'type': 'sighting', 'confidence': 'High', 'internal': True,
+         'source': 'Microsoft Defender ATP', 'sensor': 'endpoint',
+         'schema_version': '1.0.16', 'relations': [
+            {'origin': 'Microsoft Defender ATP',
+             'relation': 'File_Name_Of',
+             'source': {'type': 'file_name',
+                        'value': 'Ransomware.Rex[1].zip'},
+             'related': {'type': 'sha1',
+                         'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6'}},
+            {'origin': 'Microsoft Defender ATP',
+             'relation': 'File_Name_Of',
+             'source': {'type': 'file_name',
+                        'value': 'Ransomware.Rex[1].zip'},
+             'related': {'type': 'sha256',
+                         'value': '32856e998ff1a8b89e30c9658721595d'
+                                  '403ff0eece70dc803a36d1939e429f8d'}},
+            {'origin': 'Microsoft Defender ATP',
+             'relation': 'File_Name_Of',
+             'source': {'type': 'file_name',
+                        'value': 'Ransomware.Rex[1].zip'},
+             'related': {'type': 'md5',
+                         'value': '50188823168525455c273c07d8457b87'}},
+            {'origin': 'Microsoft Defender ATP',
+             'relation': 'File_Path_Of',
+             'source': {'type': 'file_path',
+                        'value': 'C:\\Users\\Serhii\\'
+                                 'AppData\\Local\\Packages\\'
+                                 'Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\'
+                                 '#!001\\MicrosoftEdge\\Cache\\HCRKS966\\'
+                                 'Ransomware.Rex[1].zip'},
+             'related': {'type': 'file_name',
+                         'value': 'Ransomware.Rex[1].zip'}},
+            {'origin': 'Microsoft Defender ATP',
+             'relation': 'Related_To',
+             'source': {'type': 'file_name',
+                        'value': 'MicrosoftEdgeCP.exe'},
+             'related': {'type': 'file_name',
+                         'value': 'Ransomware.Rex[1].zip'}},
+            {'origin': 'Microsoft Defender ATP',
+             'relation': 'File_Name_Of',
+             'source': {'type': 'file_name',
+                        'value': 'MicrosoftEdgeCP.exe'},
+             'related': {'type': 'sha1',
+                         'value': 'ecb05717e416d965255387f4edc196889aa12c67'}},
+            {'origin': 'Microsoft Defender ATP',
+             'relation': 'File_Name_Of',
+             'source': {'type': 'file_name',
+                        'value': 'MicrosoftEdgeCP.exe'},
+             'related': {'type': 'sha256',
+                         'value': 'ee7174ee353e7d29ce17d29d66411b36'
+                                  '23c39d9dec3f439e35af47a7e7a7c895'}},
+            {'origin': 'Microsoft Defender ATP',
+             'relation': 'File_Name_Of',
+             'source': {'type': 'file_name',
+                        'value': 'MicrosoftEdgeCP.exe'},
+             'related': {'type': 'md5',
+                         'value': '0e954887fc791f668ce388f89bc3d6c6'}},
+            {'origin': 'Microsoft Defender ATP',
+             'relation': 'File_Path_Of',
+             'source': {'type': 'file_path',
+                        'value': 'c:\\windows\\system32\\microsoftedgecp.exe'},
+             'related': {'type': 'file_name',
+                         'value': 'MicrosoftEdgeCP.exe'}},
+            {'origin': 'Microsoft Defender ATP',
+             'relation': 'Related_To',
+             'source': {'type': 'file_name',
+                        'value': 'MicrosoftEdgeCP.exe'},
+             'related': {'type': 'file_name',
+                         'value': 'svchost.exe'}}],
+         'targets': [{'type': 'endpoint', 'os': 'Windows10',
+                      'observables': [
+                          {'type': 'hostname',
+                           'value': 'DESKTOP-AU3IP5K'},
+                          {'type': 'ip', 'value': '10.0.2.15'}],
+                      'observed_time': {
+                          'start_time': '2020-05-28T07:06:58.4340352Z'}}],
+         'id': 'transient-sighting:ded6f089-ea5e-401d-a0ba-aed6457d4ba1',
+         'count': 2,
+         'observables': [
+             {'type': 'sha1',
+              'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6'}],
+         'observed_time': {
+             'start_time': '2020-05-28T07:06:58.4340352Z'}}]}
+             }
 }
 
 
@@ -478,9 +518,11 @@ EXPECTED_RESPONSE_400_ERROR = {
 
 
 GET_SHA256_FOR_0d549631690ea297c25b2a4e133cacb8a87b97c6 = {
-    '@odata.context': 'https://api.securitycenter.windows.com/api/v1.0/$metadata#Files/$entity',
+    '@odata.context': 'https://api.securitycenter.windows.com/'
+                      'api/v1.0/$metadata#Files/$entity',
     'sha1': '0d549631690ea297c25b2a4e133cacb8a87b97c6',
-    'sha256': '32856e998ff1a8b89e30c9658721595d403ff0eece70dc803a36d1939e429f8d',
+    'sha256': '32856e998ff1a8b89e30c9658721595d'
+              '403ff0eece70dc803a36d1939e429f8d',
     'md5': '50188823168525455c273c07d8457b87',
     'globalPrevalence': 15,
     'globalFirstObserved': '2017-03-16T12:02:32.4527362Z',
@@ -499,9 +541,11 @@ GET_SHA256_FOR_0d549631690ea297c25b2a4e133cacb8a87b97c6 = {
 
 
 GET_SHA256_FOR_ecb05717e416d965255387f4edc196889aa12c67 = {
-    '@odata.context': 'https://api.securitycenter.windows.com/api/v1.0/$metadata#Files/$entity',
+    '@odata.context': 'https://api.securitycenter.windows.com/'
+                      'api/v1.0/$metadata#Files/$entity',
     'sha1': 'ecb05717e416d965255387f4edc196889aa12c67',
-    'sha256': 'ee7174ee353e7d29ce17d29d66411b3623c39d9dec3f439e35af47a7e7a7c895',
+    'sha256': 'ee7174ee353e7d29ce17d29d66411b36'
+              '23c39d9dec3f439e35af47a7e7a7c895',
     'md5': '0e954887fc791f668ce388f89bc3d6c6',
     'globalPrevalence': 960835,
     'globalFirstObserved': '2019-03-20T20:18:55.4327667Z',
@@ -732,7 +776,10 @@ AH_RESPONSE = {
             "DeviceName": "desktop-au3ip5k",
             "ActionType": "FileCreated",
             "FileName": "Ransomware.Rex[1].zip",
-            "FolderPath": "C:\\Users\\Serhii\\AppData\\Local\\Packages\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\#!001\\MicrosoftEdge\\Cache\\HCRKS966\\Ransomware.Rex[1].zip",
+            "FolderPath": "C:\\Users\\Serhii\\AppData\\Local\\Packages\\"
+                          "Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC\\"
+                          "#!001\\MicrosoftEdge\\Cache\\HCRKS966\\"
+                          "Ransomware.Rex[1].zip",
             "SHA1": "0d549631690ea297c25b2a4e133cacb8a87b97c6",
             "SHA256": "",
             "MD5": "50188823168525455c273c07d8457b87",
@@ -742,29 +789,36 @@ AH_RESPONSE = {
             "FileSize": 2843585,
             "InitiatingProcessAccountDomain": "desktop-au3ip5k",
             "InitiatingProcessAccountName": "serhii",
-            "InitiatingProcessAccountSid": "S-1-5-21-2782702779-1769723919-1938768942-1001",
+            "InitiatingProcessAccountSid": "S-1-5-21-2782702779-1769723919-"
+                                           "1938768942-1001",
             "InitiatingProcessAccountUpn": "",
             "InitiatingProcessAccountObjectId": "",
             "InitiatingProcessMD5": "0e954887fc791f668ce388f89bc3d6c6",
-            "InitiatingProcessSHA1": "ecb05717e416d965255387f4edc196889aa12c67",
+            "InitiatingProcessSHA1": "ecb05717e416d9652553"
+                                     "87f4edc196889aa12c67",
             "InitiatingProcessSHA256": "",
-            "InitiatingProcessFolderPath": "c:\\windows\\system32\\microsoftedgecp.exe",
+            "InitiatingProcessFolderPath": "c:\\windows\\system32\\"
+                                           "microsoftedgecp.exe",
             "InitiatingProcessFileName": "MicrosoftEdgeCP.exe",
             "InitiatingProcessId": 5788,
-            "InitiatingProcessCommandLine": "\"MicrosoftEdgeCP.exe\" -ServerName:Windows.Internal.WebRuntime.ContentProcessServer",
+            "InitiatingProcessCommandLine": "\"MicrosoftEdgeCP.exe\" "
+                                            "-ServerName:Windows.Internal."
+                                            "WebRuntime.ContentProcessServer",
             "InitiatingProcessCreationTime": "2020-05-28T06:49:10.9330787Z",
             "InitiatingProcessIntegrityLevel": "Low",
             "InitiatingProcessTokenElevation": "TokenElevationTypeLimited",
             "InitiatingProcessParentId": 804,
             "InitiatingProcessParentFileName": "svchost.exe",
-            "InitiatingProcessParentCreationTime": "2020-05-25T17:12:09.5929805Z",
+            "InitiatingProcessParentCreationTime": "2020-05-25T"
+                                                   "17:12:09.5929805Z",
             "RequestProtocol": "Local",
             "ShareName": "",
             "RequestSourceIP": "",
             "RequestSourcePort": None,
             "RequestAccountName": "Serhii",
             "RequestAccountDomain": "DESKTOP-AU3IP5K",
-            "RequestAccountSid": "S-1-5-21-2782702779-1769723919-1938768942-1001",
+            "RequestAccountSid": "S-1-5-21-2782702779-1769723919-"
+                                 "1938768942-1001",
             "SensitivityLabel": "",
             "SensitivitySubLabel": "",
             "IsAzureInfoProtectionApplied": None,
