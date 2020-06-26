@@ -298,21 +298,21 @@ The following permissions are required to work with this module.
 
 ### CTIM Mapping Specifics
 
-Each sighting is built from [alerts](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/alerts) 
-and [Advanced hunting](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/run-advanced-query-api). 
-They are matched, for example, "description" in alert with "description" in the sighting. 
+Each Sighting is built from [alerts](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/alerts) 
+and [Advanced Hunting API](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/run-advanced-query-api). 
+The fields match, for example, `description` in a Sighting and `description` an alert. 
 
-Each `Sighting` for a supported observable is based on a matching alert or event(from the Advanced hunting)
-which happened on one of the machines that was added to the monitoring of Microsoft Defender ATP. 
-Alerts and events (from the Advanced hunting) have a different response structure. 
-Events depend on the type of observable and the differences between them. 
-Below are some examples of mapping fields for alerts.
+Each `Sighting` for a supported observable is based on a matching alert or event from the Advanced Hunting API
+which happened on one of the machines that were added to the monitoring of Microsoft Defender ATP. 
+Alerts and events from the Advanced Hunting API have different response structures. 
+Events depend on the types of observable and the differences between them. 
+There are examples of mapping fields for alerts below:
 
-- `description` of an alert is mapped to `description` of a sighting, but the event does not have this field.
+- `description` of an alert is mapped to `description` of a Sighting, but the event does not have this field.
 
 - `targets` of a `Sighting` are based on `computerDnsName` of an alert. 
   Using a `machineId`, we make a request to [endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id)
-  - `lastIpAddress` use in `targets[].observables[]` like `{"type": "ip", "value": <lastIpAddress>}`
+  - `lastIpAddress` is used in `targets[].observables[]` like `{"type": "ip", "value": <lastIpAddress>}`
   - `osPlatform` as `targets[].os`
   - `firstEventTime` as `targets[].observed_time.start_time`
  
