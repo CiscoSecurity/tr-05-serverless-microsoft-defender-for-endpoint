@@ -1,0 +1,13 @@
+{
+  "name": "Microsoft Defender ATP",
+  "jwt": {
+    "client_id": "Application ID",
+    "client_secret": "Client Secret",
+    "tenant_id": "Tenant ID"
+  },
+  "region": {
+    "us": "564f6f99-b94a-4605-8280-a679c0e26074",
+    "eu": "63f880fc-2b04-4b4c-b48d-9c44d9cb4e02",
+    "apjc": "e6507218-ad69-4306-853f-dd5a37771f5e"
+  }
+}
