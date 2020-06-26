@@ -311,8 +311,8 @@ There are examples of mapping fields for alerts below:
 - `description` of an alert is mapped to `description` of a Sighting, but the event does not have this field.
 
 - `targets` of a `Sighting` are based on `computerDnsName` of an alert. 
-  Using a `machineId`, we make a request to [endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id)
-  - `lastIpAddress` is used in `targets[].observables[]` like `{"type": "ip", "value": <lastIpAddress>}`
+  We make a request to [endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id) using `machineId`
+  - `lastIpAddress` is used in `targets[].observables[]` as `{"type": "ip", "value": <lastIpAddress>}`
   - `osPlatform` as `targets[].os`
   - `firstEventTime` as `targets[].observed_time.start_time`
  
