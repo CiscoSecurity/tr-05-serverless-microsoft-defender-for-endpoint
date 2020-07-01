@@ -9,7 +9,10 @@ from tests.unit.mock_for_tests import (
     EXPECTED_RESPONSE_500_ERROR,
     EXPECTED_RESPONSE_429_ERROR,
     RAW_RESPONSE_MOCK,
-    EXPECTED_RESPONSE
+    EXPECTED_RESPONSE,
+    AH_RESPONSE,
+    GET_SHA256_FOR_0d549631690ea297c25b2a4e133cacb8a87b97c6,
+    GET_SHA256_FOR_ecb05717e416d965255387f4edc196889aa12c67
 )
 
 
@@ -73,7 +76,12 @@ def test_enrich_call_success(call_api, route, client, valid_jwt,
         {'type': 'user', 'value': 'Serhii'}
     ]
 
-    call_api.side_effect = [RAW_RESPONSE_MOCK, for_target_response]
+    call_api.side_effect = [
+        RAW_RESPONSE_MOCK, AH_RESPONSE,
+        for_target_response,
+        GET_SHA256_FOR_0d549631690ea297c25b2a4e133cacb8a87b97c6,
+        GET_SHA256_FOR_ecb05717e416d965255387f4edc196889aa12c67,
+        for_target_response]
 
     response = client.post(
         route, headers=headers(valid_jwt), json=valid_json
@@ -86,8 +94,8 @@ def test_enrich_call_success(call_api, route, client, valid_jwt,
     if route == '/observe/observables':
 
         sightings = data['data']['sightings']
-        assert sightings['count'] == 1
-        assert len(sightings['docs']) == 1
+        assert sightings['count'] == 2
+        assert len(sightings['docs']) == 2
         sighting = sightings['docs'][0]
         exp_sighting = EXPECTED_RESPONSE['data']['sightings']['docs'][0]
         assert sighting.keys() == exp_sighting.keys()
@@ -195,7 +203,9 @@ def test_enrich_call_wrong_observable(set_headers, route, client,
         headers = {'Authorization': 'ABC'}
 
         def post(self, *args, **kwargs):
-            pass
+            mock_response = mock.MagicMock()
+            mock_response.json.return_value = {'Results': []}
+            return mock_response
 
         def get(self, *args, **kwargs):
             mock_response = mock.MagicMock()
