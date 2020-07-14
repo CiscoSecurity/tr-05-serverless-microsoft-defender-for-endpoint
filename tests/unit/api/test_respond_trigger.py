@@ -106,7 +106,8 @@ def test_respond_trigger_unsupported_action_id(route, client, valid_jwt):
 
 
 @mock.patch('requests.Session')
-def test_respond_trigger_api_return_400(api_response, route, client, valid_jwt):
+def test_respond_trigger_api_return_400(api_response, route,
+                                        client, valid_jwt):
 
     class Session:
         headers = {'Authorization': 'ABC'}
