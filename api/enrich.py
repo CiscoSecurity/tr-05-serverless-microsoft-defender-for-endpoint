@@ -3,7 +3,8 @@ from functools import partial
 from flask import Blueprint, current_app, g
 
 from api.schemas import ObservableSchema
-from api.utils import (get_json, get_jwt, jsonify_data, jsonify_errors)
+from api.utils import (get_json, get_jwt, jsonify_data, jsonify_errors,
+                       group_observables, format_docs)
 from api.errors import CTRBadRequestError
 from api.client import Client
 from api.mapping import get_sightings_from_ah, get_sightings_from_alert
@@ -14,51 +15,29 @@ enrich_api = Blueprint('enrich', __name__)
 get_observables = partial(get_json, schema=ObservableSchema(many=True))
 
 
-def format_docs(docs):
-    return {'count': len(docs), 'docs': docs}
-
-
-def group_observables(relay_input):
-    # Leave only unique observables
-
-    result = []
-    for observable in relay_input:
-        o_value = observable['value']
-        o_type = observable['type'].lower()
-
-        # Get only supported types.
-        if o_type in current_app.config['MD_ATP_OBSERVABLE_TYPES']:
-            obj = {'type': o_type, 'value': o_value}
-            if obj in result:
-                continue
-            result.append(obj)
-
-    return result
-
-
 def get_alert(client, observable):
     if observable['type'] == 'sha256':
         entity = 'files'
         url = client.format_url(entity, observable['value'])
-        response = client.call_api(url)
+        response = client.call_api(url)[0]
         if response is not None:
             url = client.format_url(entity, response['sha1'], '/alerts')
-            response = client.call_api(url)
+            response = client.call_api(url)[0]
 
     elif observable['type'] == 'sha1':
         entity = 'files'
         url = client.format_url(entity, observable['value'], '/alerts')
-        response = client.call_api(url)
+        response = client.call_api(url)[0]
 
     elif observable['type'] == 'domain':
         entity = 'urls'
         url = client.format_url('domains', observable['value'], '/alerts')
-        response = client.call_api(url)
+        response = client.call_api(url)[0]
 
     elif observable['type'] == 'ip':
         entity = 'ips'
         url = client.format_url(entity, observable['value'], '/alerts')
-        response = client.call_api(url)
+        response = client.call_api(url)[0]
 
     else:
         raise CTRBadRequestError(
@@ -84,12 +63,16 @@ def call_advanced_hunting(client, o_value, o_type, limit):
                   "| where RemoteUrl == '{o_value}' "
                   "| limit {limit}"
     }
-    q = queries[o_type].format(o_value=o_value, limit=limit)
-    query = json.dumps(
-        {'Query': q}
-    ).encode("utf-8")
-    url = 'https://api.securitycenter.windows.com/api/advancedqueries/run'
-    return client.call_api(url, 'POST', query)
+    query = queries[o_type].format(o_value=o_value, limit=limit)
+    query = json.dumps({'Query': query}).encode('utf-8')
+    result, error = client.call_api(
+        current_app.config['ADVANCED_HUNTING_URL'],
+        'POST', query)
+
+    if error is not None:
+        CTRBadRequestError(error)
+
+    return result['Results']
 
 
 @enrich_api.route('/deliberate/observables', methods=['POST'])
@@ -135,7 +118,7 @@ def observe_observables():
             events = call_advanced_hunting(
                 client,
                 observable['value'], observable['type'],
-                current_app.config['CTR_ENTITIES_LIMIT'] - count)['Results']
+                current_app.config['CTR_ENTITIES_LIMIT'] - count)
             count = count + len(events)
 
         for alert in alerts:

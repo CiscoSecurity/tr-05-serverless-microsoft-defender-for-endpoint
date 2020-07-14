@@ -29,10 +29,11 @@ class Client:
         return url
 
     def call_api(self, url, method='GET', data=None):
+        error = None
+        result = None
+
         if not self.session.headers.get('Authorization'):
             self._auth()
-
-        # url = self.format_url(entity, observable)
 
         if method == 'POST':
             response = self.session.post(url, data=data)
@@ -48,9 +49,10 @@ class Client:
             elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
                 raise CTRInternalServerError
             else:
-                return None
-
-        return response.json()
+                error = str(response.json()['error'])
+        else:
+            result = response.json()
+        return result, error
 
     def _set_headers(self, response):
         token = response.json().get('access_token')

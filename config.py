@@ -11,7 +11,11 @@ class Config:
     AUTH_URL = "https://login.windows.net/{tenant_id}/oauth2/token"
 
     API_HOST = 'https://api.securitycenter.windows.com'
-    API_URL = API_HOST + '/api/v1.0/{entity}/{value}'
+    API_VERSION = 'v1.0'
+    BASE_URL = f'{API_HOST}/api/{API_VERSION}'
+    API_URL = BASE_URL + '/{entity}/{value}'
+    ADVANCED_HUNTING_URL = f'{BASE_URL}/advancedqueries/run'
+    SUBMIT_INDICATOR_URL = f'{BASE_URL}/indicators'
 
     MD_ATP_OBSERVABLE_TYPES = (
         'sha1', 'sha256', 'ip', 'domain'

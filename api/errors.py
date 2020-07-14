@@ -50,10 +50,13 @@ class CTRUnexpectedResponseError(CTRBaseError):
 
 
 class CTRBadRequestError(CTRBaseError):
-    def __init__(self, error_message):
+    def __init__(self, error_message=None):
+        message = 'Invalid request to Microsoft Defender ATP.'
+        if error_message:
+            message += f' {error_message}'
         super().__init__(
             INVALID_REQUEST,
-            f'Invalid request to Microsoft Defender ATP. {error_message}'
+            message
         )
 
 
