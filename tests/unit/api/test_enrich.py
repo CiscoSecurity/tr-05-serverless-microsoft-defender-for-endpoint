@@ -72,16 +72,15 @@ def test_enrich_call_success(call_api, route, client, valid_jwt,
 
     exp_target_observables = [
         {'type': 'hostname', 'value': 'desktop-au3ip5k'},
-        {'type': 'ip', 'value': '172.17.230.209'},
-        {'type': 'user', 'value': 'Serhii'}
+        {'type': 'ip', 'value': '172.17.230.209'}
     ]
 
     call_api.side_effect = [
-        RAW_RESPONSE_MOCK, AH_RESPONSE,
-        for_target_response,
-        GET_SHA256_FOR_0d549631690ea297c25b2a4e133cacb8a87b97c6,
-        GET_SHA256_FOR_ecb05717e416d965255387f4edc196889aa12c67,
-        for_target_response]
+        (RAW_RESPONSE_MOCK, None), (AH_RESPONSE, None),
+        (for_target_response, None),
+        (GET_SHA256_FOR_0d549631690ea297c25b2a4e133cacb8a87b97c6, None),
+        (GET_SHA256_FOR_ecb05717e416d965255387f4edc196889aa12c67, None),
+        (for_target_response, None)]
 
     response = client.post(
         route, headers=headers(valid_jwt), json=valid_json

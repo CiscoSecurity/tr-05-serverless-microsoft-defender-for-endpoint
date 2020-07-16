@@ -64,3 +64,25 @@ def jsonify_errors(error):
         data['data'] = {'sightings': g.sightings}
 
     return jsonify(data)
+
+
+def group_observables(relay_input):
+    # Leave only unique observables
+
+    result = []
+    for observable in relay_input:
+        o_value = observable['value']
+        o_type = observable['type'].lower()
+
+        # Get only supported types.
+        if o_type in current_app.config['MD_ATP_OBSERVABLE_TYPES']:
+            obj = {'type': o_type, 'value': o_value}
+            if obj in result:
+                continue
+            result.append(obj)
+
+    return result
+
+
+def format_docs(docs):
+    return {'count': len(docs), 'docs': docs}

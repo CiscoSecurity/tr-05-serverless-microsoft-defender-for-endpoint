@@ -17,30 +17,27 @@ CTIM_SCHEMA_VERSION = {
 
 def _get_target_from_alert(client, alert):
     url = client.format_url('machines', alert['machineId'])
-    res = client.call_api(url)
+    res = client.call_api(url)[0]
 
     observables = [
         {'type': 'hostname', 'value': alert['computerDnsName']},
         {'type': 'ip', 'value': res['lastIpAddress']}
     ]
 
-    if alert['relatedUser'] and alert['relatedUser'].get('userName'):
-        observables.append(
-            {'type': 'user', 'value': alert['relatedUser']['userName']})
-
     return {
         'type': 'endpoint',
         'os': res['osPlatform'],
         'observables': observables,
         'observed_time': {
-            'start_time': alert['firstEventTime']
+            'start_time': alert['firstEventTime'],
+            'end_time': alert['firstEventTime']
         }
     }
 
 
 def _get_target_from_ah(client, event):
     url = client.format_url('machines', event['DeviceId'])
-    res = client.call_api(url)
+    res = client.call_api(url)[0]
 
     observables = [
         {'type': 'hostname', 'value': event['DeviceName']},
@@ -52,7 +49,8 @@ def _get_target_from_ah(client, event):
         'os': res['osPlatform'],
         'observables': observables,
         'observed_time': {
-            'start_time': event['Timestamp']
+            'start_time': event['Timestamp'],
+            'end_time': event['Timestamp']
         }
     }
 
@@ -155,7 +153,10 @@ def get_sightings_from_alert(client, alert, observable, count, entity):
     sighting['id'] = f'transient-sighting:{uuid.uuid4()}'
     sighting['count'] = count
     sighting['observables'] = [observable, ]
-    sighting['observed_time'] = {'start_time': alert['firstEventTime']}
+    sighting['observed_time'] = {
+        'start_time': alert['firstEventTime'],
+        'end_time': alert['firstEventTime']
+    }
     sighting['title'] = alert['title']
     sighting['description'] = alert['description']
     sighting['severity'] = SEVERITY.get(alert['severity'], None)
@@ -222,7 +223,7 @@ def _get_domain(event, client):
             else:
                 url = client.format_url(
                     'files', event['InitiatingProcessSHA1'])
-                res = client.call_api(url)
+                res = client.call_api(url)[0]
                 if res is not None:
                     relations.append(_add_relation(
                         origin=origin,
@@ -324,7 +325,7 @@ def _get_ip(event, client):
             else:
                 url = client.format_url(
                     'files', event['InitiatingProcessSHA1'])
-                res = client.call_api(url)
+                res = client.call_api(url)[0]
                 if res is not None:
                     relations.append(_add_relation(
                         origin=origin,
@@ -402,7 +403,7 @@ def _get_file(event, client):
         else:
             url = client.format_url(
                 'files', event['SHA1'])
-            res = client.call_api(url)
+            res = client.call_api(url)[0]
             if res is not None:
                 relations.append(_add_relation(
                     origin=origin,
@@ -481,7 +482,7 @@ def _get_file(event, client):
             else:
                 url = client.format_url(
                     'files', event['InitiatingProcessSHA1'])
-                res = client.call_api(url)
+                res = client.call_api(url)[0]
                 if res is not None:
                     relations.append(_add_relation(
                         origin=origin,
@@ -558,5 +559,8 @@ def get_sightings_from_ah(client, event, observable, count):
 
     sighting['observables'] = [observable, ]
 
-    sighting['observed_time'] = {'start_time': event['Timestamp']}
+    sighting['observed_time'] = {
+        'start_time': event['Timestamp'],
+        'end_time': event['Timestamp']
+    }
     return sighting

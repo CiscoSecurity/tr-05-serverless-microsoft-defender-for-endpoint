@@ -357,7 +357,9 @@ EXPECTED_RESPONSE = {
             {'type': 'sha1',
              'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6'}],
         'observed_time': {
-            'start_time': '2020-05-28T06:52:39.8400379Z'},
+            'start_time': '2020-05-28T06:52:39.8400379Z',
+            'end_time': '2020-05-28T06:52:39.8400379Z'
+        },
         'title': "'Vigorf' malware was detected",
         'description': 'Malware and unwanted software are undesirable '
                        'applications that perform annoying, disruptive, '
@@ -448,14 +450,18 @@ EXPECTED_RESPONSE = {
                            'value': 'DESKTOP-AU3IP5K'},
                           {'type': 'ip', 'value': '10.0.2.15'}],
                       'observed_time': {
-                          'start_time': '2020-05-28T07:06:58.4340352Z'}}],
+                          'start_time': '2020-05-28T07:06:58.4340352Z',
+                          'end_time': '2020-05-28T07:06:58.4340352Z'
+                      }}],
          'id': 'transient-sighting:ded6f089-ea5e-401d-a0ba-aed6457d4ba1',
          'count': 2,
          'observables': [
              {'type': 'sha1',
               'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6'}],
          'observed_time': {
-             'start_time': '2020-05-28T07:06:58.4340352Z'}}]}
+             'start_time': '2020-05-28T07:06:58.4340352Z',
+             'end_time': '2020-05-28T07:06:58.4340352Z'
+         }}]}
              }
 }
 
@@ -826,4 +832,85 @@ AH_RESPONSE = {
             "AppGuardContainerId": ""
         },
     ]
+}
+
+EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
+  "data": [
+    {
+      "categories": [
+        "Defender ATP",
+        "Submit Indicator"
+      ],
+      "description": "Submit indicator with alert action for DOMAIN",
+      "id": "defender-submit-indicator-alert",
+      "query-params": {
+        "observable_type": "domain",
+        "observable_value": "asdf.com"
+      },
+      "title": "Submit indicator with Alert"
+    },
+    {
+      "categories": [
+        "Defender ATP",
+        "Submit Indicator"
+      ],
+      "description": "Submit indicator with Alert and Block action for DOMAIN",
+      "id": "defender-submit-indicator-alert-and-block",
+      "query-params": {
+        "observable_type": "domain",
+        "observable_value": "asdf.com"
+      },
+      "title": "Submit indicator with Alert and Block"
+    },
+    {
+      "categories": [
+        "Defender ATP",
+        "Submit Indicator"
+      ],
+      "description": "Submit indicator with Allowed action for DOMAIN",
+      "id": "defender-submit-indicator-allowed",
+      "query-params": {
+        "observable_type": "domain",
+        "observable_value": "asdf.com"
+      },
+      "title": "Submit indicator with Allowed"
+    }
+  ]
+}
+
+RAW_RESPONSE_TRIGGER_OBSERVABLE = {
+    '@odata.context': 'https://api.securitycenter.windows.com/api/v1.0'
+                      '/$metadata#Indicators/$entity',
+    'id': '13',
+    'indicatorValue': 'asdf.com',
+    'indicatorType': 'DomainName',
+    'action': 'Alert',
+    'createdBy': '0006810a-4b24-40b7-862b-6e30a2ed88d4',
+    'source': 'Defender ATP Relay API',
+    'sourceType': 'AadApp',
+    'severity': 'High',
+    'category': 1,
+    'application': None,
+    'educateUrl': None,
+    'bypassDurationHours': None,
+    'title': 'From SecureX Threat Response',
+    'description': 'This indicator was added via SecureX Threat Response '
+                   'by the UI or API response actions',
+    'recommendedActions': None,
+    'creationTimeDateTimeUtc': '2020-07-13T16:49:50.290203Z',
+    'expirationTime': None,
+    'lastUpdateTime': '2020-07-13T16:49:50.290203Z',
+    'lastUpdatedBy': None, 'rbacGroupNames': [],
+    'rbacGroupIds': [],
+    'notificationId': None,
+    'notificationBody': None,
+    'version': None,
+    'mitreTechniques': [],
+    'historicalDetection': False,
+    'lookBackPeriod': None,
+    'generateAlert': True,
+    'additionalInfo': None,
+    'createdByDisplayName': 'Defender ATP Relay API',
+    'createdBySource': 'PublicApi',
+    'certificateInfo': None
 }
