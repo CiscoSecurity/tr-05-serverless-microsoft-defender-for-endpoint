@@ -7,7 +7,7 @@ from api.utils import (get_json, get_jwt, jsonify_data, jsonify_errors,
                        group_observables, format_docs)
 from api.errors import CTRBadRequestError
 from api.client import Client
-from api.mapping import get_sightings_from_ah, get_sightings_from_alert
+from api.mapping import Mapping
 
 enrich_api = Blueprint('enrich', __name__)
 
@@ -121,17 +121,15 @@ def observe_observables():
                 current_app.config['CTR_ENTITIES_LIMIT'] - count)
             count = count + len(events)
 
+        mapping = Mapping(client, observable, count, entity)
+
         for alert in alerts:
-            sighting = get_sightings_from_alert(client, alert,
-                                                observable, count, entity)
+            sighting = mapping.build_sighting_from_alert(alert)
 
             g.sightings.append(sighting)
 
         for event in events:
-            sighting = get_sightings_from_ah(client,
-                                             event,
-                                             observable,
-                                             count)
+            sighting = mapping.build_sighting_from_ah(event)
             g.sightings.append(sighting)
 
     client.close_session()
