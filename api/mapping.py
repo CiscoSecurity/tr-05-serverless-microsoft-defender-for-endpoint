@@ -21,7 +21,8 @@ def _get_target_from_alert(client, alert):
 
     observables = [
         {'type': 'hostname', 'value': alert['computerDnsName']},
-        {'type': 'ip', 'value': res['lastIpAddress']}
+        {'type': 'ip', 'value': res['lastIpAddress']},
+        {'type': 'device', 'value': alert['machineId']}
     ]
 
     return {
@@ -41,7 +42,8 @@ def _get_target_from_ah(client, event):
 
     observables = [
         {'type': 'hostname', 'value': event['DeviceName']},
-        {'type': 'ip', 'value': res['lastIpAddress']}
+        {'type': 'ip', 'value': res['lastIpAddress']},
+        {'type': 'device', 'value': event['DeviceId']}
     ]
 
     return {
