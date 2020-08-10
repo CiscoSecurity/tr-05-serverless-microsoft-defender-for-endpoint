@@ -110,7 +110,9 @@ def respond_observables():
             client.open_session()
 
             _actions = get_supported_actions(client, observable['value'])
-            _actions = get_dynamic_actions(client, observable['value'], _actions)
+            _actions = get_dynamic_actions(client,
+                                           observable['value'],
+                                           _actions)
 
             actions = []
             for item in _actions:
@@ -147,9 +149,11 @@ def respond_observables():
                     'query-params': query_params
                 },
                 {
-                    'id': 'microsoft-defender-atp-submit-indicator-alert-and-block',
+                    'id': 'microsoft-defender-atp-'
+                          'submit-indicator-alert-and-block',
                     'title': 'Submit indicator with Alert and Block',
-                    'description': f'Submit indicator with Alert and Block action '
+                    'description': f'Submit indicator with '
+                                   f'Alert and Block action '
                                    f'for {observable["type"].upper()}',
                     'categories': [
                         'Microsoft Defender ATP',
@@ -193,88 +197,67 @@ def respond_trigger():
 
     if data['observable_type'] == 'device':
         comment = 'Performed via SecureX Threat Response'
+
         actions = {
             'microsoft-defender-atp-FullIsolation': {
                 'url': '{base_url}/machines/{machine_id}/isolate'.format(
                     base_url=current_app.config['BASE_URL'],
                     machine_id=data['observable_value']),
-                'data': {
-                    'Comment': comment,
-                    'IsolationType': 'Full'
-                }
+                'data': {'Comment': comment, 'IsolationType': 'Full'}
             },
             'microsoft-defender-atp-SelectiveIsolation': {
                 'url': '{base_url}/machines/{machine_id}/isolate'.format(
                     base_url=current_app.config['BASE_URL'],
                     machine_id=data['observable_value']),
-                'data': {
-                    'Comment': comment,
-                    'IsolationType': 'Selective'
-                }
+                'data': {'Comment': comment, 'IsolationType': 'Selective'}
             },
             'microsoft-defender-atp-Unisolate': {
                 'url': '{base_url}/machines/{machine_id}/unisolate'.format(
                     base_url=current_app.config['BASE_URL'],
                     machine_id=data['observable_value']),
-                'data': {
-                    'Comment': comment
-                }
+                'data': {'Comment': comment}
             },
             'microsoft-defender-atp-RestrictCodeExecution': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/restrictCodeExecution'.format(
-                    base_url=current_app.config['BASE_URL'],
-                    machine_id=data['observable_value']),
-                'data': {
-                    'Comment': comment
-                }
+                        base_url=current_app.config['BASE_URL'],
+                        machine_id=data['observable_value']),
+                'data': {'Comment': comment}
             },
             'microsoft-defender-atp-UnrestrictCodeExecution': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/unrestrictCodeExecution'.format(
-                    base_url=current_app.config['BASE_URL'],
-                    machine_id=data['observable_value']),
-                'data': {
-                    'Comment': comment
-                }
+                        base_url=current_app.config['BASE_URL'],
+                        machine_id=data['observable_value']),
+                'data': {'Comment': comment}
             },
             'microsoft-defender-atp-RunQuickAntiVirusScan': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/runAntiVirusScan'.format(
-                    base_url=current_app.config['BASE_URL'],
-                    machine_id=data['observable_value']),
-                'data': {
-                    'Comment': comment,
-                    'ScanType': 'Quick'
-                }
+                        base_url=current_app.config['BASE_URL'],
+                        machine_id=data['observable_value']),
+                'data': {'Comment': comment, 'ScanType': 'Quick'}
             },
             'microsoft-defender-atp-RunFullAntiVirusScan': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/runAntiVirusScan'.format(
-                    base_url=current_app.config['BASE_URL'],
-                    machine_id=data['observable_value']),
-                'data': {
-                    'Comment': comment,
-                    'ScanType': 'Full'
-                }
+                        base_url=current_app.config['BASE_URL'],
+                        machine_id=data['observable_value']),
+                'data': {'Comment': comment, 'ScanType': 'Full'}
             },
             'microsoft-defender-atp-CollectInvestigationPackage': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/collectInvestigationPackage'.format(
-                    base_url=current_app.config['BASE_URL'],
-                    machine_id=data['observable_value']),
-                'data': {
-                    'Comment': comment
-                }
+                        base_url=current_app.config['BASE_URL'],
+                        machine_id=data['observable_value']),
+                'data': {'Comment': comment}
             },
             'microsoft-defender-atp-InitiateInvestigation': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/startInvestigation'.format(
-                    base_url=current_app.config['BASE_URL'],
-                    machine_id=data['observable_value']),
-                'data': {
-                    'Comment': comment
-                }
+                        base_url=current_app.config['BASE_URL'],
+                        machine_id=data['observable_value']),
+                'data': {'Comment': comment}
             }
         }
 

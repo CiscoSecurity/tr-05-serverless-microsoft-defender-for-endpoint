@@ -23,7 +23,7 @@ def invalid_json():
 def test_respond_trigger_wrong_key(route, client, valid_jwt):
 
     invalid_json = {
-        'wrong_key': 'defender-submit-indicator-alert',
+        'wrong_key': 'microsoft-defender-atp-submit-indicator-alert',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }
@@ -50,7 +50,7 @@ def test_respond_trigger_wrong_key(route, client, valid_jwt):
 def test_respond_trigger_unsupported_type_json(route, client, valid_jwt):
 
     invalid_json = {
-        'action-id': 'defender-submit-indicator-alert',
+        'action-id': 'microsoft-defender-atp-submit-indicator-alert',
         'observable_type': 'unknown',
         'observable_value': 'asdf.com'
     }
@@ -77,7 +77,7 @@ def test_respond_trigger_unsupported_type_json(route, client, valid_jwt):
 def test_respond_trigger_unsupported_action_id(route, client, valid_jwt):
 
     invalid_json = {
-        'action-id': 'defender-unsupported-action-id',
+        'action-id': 'microsoft-defender-atp-unsupported-action-id',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }
@@ -128,7 +128,7 @@ def test_respond_trigger_api_return_400(api_response, route,
     api_response.return_value = Session
 
     valid_json = {
-        'action-id': 'defender-submit-indicator-alert',
+        'action-id': 'microsoft-defender-atp-submit-indicator-alert',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }
@@ -159,7 +159,7 @@ def test_respond_trigger_api_return_400(api_response, route,
 def test_respond_trigger_success(call_api, route, client, valid_jwt):
 
     valid_json = {
-        'action-id': 'defender-submit-indicator-alert',
+        'action-id': 'microsoft-defender-atp-submit-indicator-alert',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }

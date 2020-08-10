@@ -838,11 +838,11 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
   "data": [
     {
       "categories": [
-        "Defender ATP",
+        "Microsoft Defender ATP",
         "Submit Indicator"
       ],
       "description": "Submit indicator with alert action for DOMAIN",
-      "id": "defender-submit-indicator-alert",
+      "id": "microsoft-defender-atp-submit-indicator-alert",
       "query-params": {
         "observable_type": "domain",
         "observable_value": "asdf.com"
@@ -851,11 +851,11 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
     },
     {
       "categories": [
-        "Defender ATP",
+        "Microsoft Defender ATP",
         "Submit Indicator"
       ],
       "description": "Submit indicator with Alert and Block action for DOMAIN",
-      "id": "defender-submit-indicator-alert-and-block",
+      "id": "microsoft-defender-atp-submit-indicator-alert-and-block",
       "query-params": {
         "observable_type": "domain",
         "observable_value": "asdf.com"
@@ -864,11 +864,11 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
     },
     {
       "categories": [
-        "Defender ATP",
+        "Microsoft Defender ATP",
         "Submit Indicator"
       ],
       "description": "Submit indicator with Allowed action for DOMAIN",
-      "id": "defender-submit-indicator-allowed",
+      "id": "microsoft-defender-atp-submit-indicator-allowed",
       "query-params": {
         "observable_type": "domain",
         "observable_value": "asdf.com"
