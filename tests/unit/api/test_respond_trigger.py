@@ -180,3 +180,32 @@ def test_respond_trigger_success(call_api, route, client, valid_jwt):
 
     assert response.status_code == HTTPStatus.OK
     assert response.get_json() == expected_payload
+
+
+@mock.patch('api.client.Client.call_api')
+def test_respond_trigger_target_success(call_api, route, client, valid_jwt):
+
+    valid_json = {
+        'action-id': 'microsoft-defender-atp-Unisolate',
+        'observable_type': 'device',
+        'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+    }
+
+    call_api.return_value = (
+        {'Comment': 'Performed via SecureX Threat Response'},
+        None
+    )
+
+    response = client.post(route,
+                           headers=headers(valid_jwt),
+                           json=valid_json
+                           )
+
+    expected_payload = {
+        'data': {
+            'status': 'success'
+        }
+    }
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.get_json() == expected_payload

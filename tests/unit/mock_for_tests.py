@@ -878,6 +878,154 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
   ]
 }
 
+AVAILABLE_MACHINE_ACTIONS_RESPONSE = {
+    '@odata.context': 'https://api.securitycenter.windows.com'
+                      '/api/$metadata#Collection(microsoft.windowsDefenderATP'
+                      '.api.ActionAvailabilityStatus)',
+    'value': [
+        {'action': 'FullIsolation',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'SelectiveIsolation',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'RunAntiVirusScan',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'CollectInvestigationPackage',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'StopAndQuarantineFile',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'RestrictCodeExecution',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'InitiateInvestigation',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'OffBoard',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'RunCustomPlaybook',
+         'isAvailable': True,
+         'notSupportedReason': None}
+    ]
+}
+
+HISTORY_MACHINE_ACTIONS_RESPONSE_EMPTY = {
+    '@odata.context': 'https://api.securitycenter.windows.com'
+                      '/api/$metadata#Collection(microsoft.windowsDefenderATP'
+                      '.api.MachineAction)',
+    'value': []
+}
+
+HISTORY_MACHINE_ACTIONS_RESPONSE_ISOLATE = {
+    '@odata.context': 'https://api.securitycenter.windows.com'
+                      '/api/$metadata#Collection(microsoft.windowsDefenderATP'
+                      '.api.MachineAction)',
+    'value': [
+        {'id': 'b5903304-9bef-4197-8aa8-b82d2e1f73d0',
+         'type': 'Isolate',
+         'requestor': '0006810a-4b24-40b7-862b-6e30a2ed88d4',
+         'requestorComment': 'Performed via SecureX Threat Response',
+         'status': 'Succeeded',
+         'machineId': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0',
+         'computerDnsName': 'desktop-au3ip5k',
+         'creationDateTimeUtc': '2020-08-07T22:53:48.9132635Z',
+         'lastUpdateDateTimeUtc': '2020-08-07T22:54:16.2274839Z',
+         'cancellationRequestor': None,
+         'cancellationComment': None,
+         'cancellationDateTimeUtc': None,
+         'errorHResult': 0,
+         'scope': 'Selective',
+         'externalId': None,
+         'requestSource': 'PublicApi',
+         'relatedFileInfo': None,
+         'commands': []},
+    ]
+}
+
+HISTORY_MACHINE_ACTIONS_RESPONSE_RESTRICT_CODE_EXECUTION = {
+    '@odata.context': 'https://api.securitycenter.windows.com'
+                      '/api/$metadata#Collection(microsoft.windowsDefenderATP'
+                      '.api.MachineAction)',
+    'value': [
+        {'id': '398688d1-bc2c-4781-82e5-b4d71fa87dba',
+         'type': 'RestrictCodeExecution',
+         'requestor': '0006810a-4b24-40b7-862b-6e30a2ed88d4',
+         'requestorComment': 'Performed via SecureX Threat Response',
+         'status': 'Succeeded',
+         'machineId': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0',
+         'computerDnsName': 'desktop-au3ip5k',
+         'creationDateTimeUtc': '2020-08-07T22:46:39.0589127Z',
+         'lastUpdateDateTimeUtc': '2020-08-07T22:47:01.5436841Z',
+         'cancellationRequestor': None,
+         'cancellationComment': None,
+         'cancellationDateTimeUtc': None,
+         'errorHResult': 0,
+         'scope': None,
+         'externalId': None,
+         'requestSource': 'PublicApi',
+         'relatedFileInfo': None,
+         'commands': []},
+    ]
+}
+
+EXPECTED_RESPONSE_RESPOND_TARGET = {
+    'data': [
+        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+         'description': 'Full isolation',
+         'id': 'microsoft-defender-atp-FullIsolation',
+         'query-params': {
+             'observable_type': 'device',
+             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
+         'title': 'Full isolation'},
+        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+         'description': 'Run full antivirus scan',
+         'id': 'microsoft-defender-atp-RunFullAntiVirusScan',
+         'query-params': {
+             'observable_type': 'device',
+             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
+         'title': 'Run full antivirus scan'},
+        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+         'description': 'Restrict app execution',
+         'id': 'microsoft-defender-atp-RestrictCodeExecution',
+         'query-params': {
+             'observable_type': 'device',
+             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
+         'title': 'Restrict app execution'},
+        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+         'description': 'Initiate automated investigation',
+         'id': 'microsoft-defender-atp-InitiateInvestigation',
+         'query-params': {
+             'observable_type': 'device',
+             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
+         'title': 'Initiate automated investigation'},
+        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+         'description': 'Collect investigation package',
+         'id': 'microsoft-defender-atp-CollectInvestigationPackage',
+         'query-params': {
+             'observable_type': 'device',
+             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
+         'title': 'Collect investigation package'},
+        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+         'description': 'Selective isolation',
+         'id': 'microsoft-defender-atp-SelectiveIsolation',
+         'query-params': {
+             'observable_type': 'device',
+             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
+         'title': 'Selective isolation'},
+        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+         'description': 'Run quick antivirus scan',
+         'id': 'microsoft-defender-atp-RunQuickAntiVirusScan',
+         'query-params': {
+             'observable_type': 'device',
+             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
+         'title': 'Run quick antivirus scan'}
+    ]
+}
+
 RAW_RESPONSE_TRIGGER_OBSERVABLE = {
     '@odata.context': 'https://api.securitycenter.windows.com/api/v1.0'
                       '/$metadata#Indicators/$entity',
