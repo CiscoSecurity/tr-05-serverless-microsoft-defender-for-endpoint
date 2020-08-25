@@ -1,4 +1,5 @@
 import requests
+import time
 from flask import current_app
 from http import HTTPStatus
 
@@ -29,6 +30,7 @@ class Client:
         return url
 
     def call_api(self, url, method='GET', data=None):
+        start = time.time()
         error = None
         result = None
 
@@ -52,6 +54,8 @@ class Client:
                 error = str(response.json()['error'])
         else:
             result = response.json()
+        # TODO: Remove print
+        print(url, ':', data, '=', time.time() - start)
         return result, error
 
     def _set_headers(self, response):

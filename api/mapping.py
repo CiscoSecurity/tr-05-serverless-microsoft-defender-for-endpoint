@@ -34,11 +34,24 @@ class Mapping:
                 **CTIM_SCHEMA_VERSION
             }
         self.relations = []
+        self._adv_hunting_url = current_app.config['ADVANCED_HUNTING_URL']
 
-    def _get_hash(self, value):
+    def _call_hashes(self, value):
+        sha1 = sha256 = md5 = None
+
         url = self.client.format_url('files', value)
         res = self.client.call_api(url)[0]
-        return res
+
+        if res.get('sha1'):
+            sha1 = res['sha1']
+
+        if res.get('sha256'):
+            sha256 = res['sha256']
+
+        if res.get('md5'):
+            md5 = res['md5']
+
+        return sha1, sha256, md5
 
     @staticmethod
     def _add_relation(origin, relation, source, related):
@@ -50,227 +63,226 @@ class Mapping:
         }
 
     def _build_relations_network(self, event, origin):
-        if event['InitiatingProcessSHA1'] and event['RemoteUrl']:
+        if event['RemoteUrl'] and event['RemoteIP']:
+            self.relations.append(self._add_relation(
+                origin=origin,
+                relation='Resolved_To',
+                source={'type': 'domain',
+                        'value': event['RemoteUrl']},
+                related={'type': 'ip',
+                         'value': event['RemoteIP']}
+            ))
+
+        if event['RemoteIP'] and event['LocalIP']:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Connect_To',
-                source={'type': 'domain',
-                        'value': event['RemoteUrl']},
-                related={'type': 'sha1',
-                         'value': event['InitiatingProcessSHA1']}
+                source={'type': 'ip',
+                        'value': event['RemoteIP']},
+                related={'type': 'ip',
+                         'value': event['LocalIP']}
             ))
 
-            self._make_2level_hash('sha1', event, origin)
-
-            if event['InitiatingProcessSHA256']:
+        def _make_relations_with_hash(hash_type, event, origin):
+            if event['RemoteUrl']:
                 self.relations.append(self._add_relation(
                     origin=origin,
                     relation='Connect_To',
-                    source={'type': 'domain',
-                            'value': event['RemoteUrl']},
-                    related={'type': 'sha1',
-                             'value': event['InitiatingProcessSHA256']}
+                    source={
+                        'type': hash_type,
+                        'value': event[f'InitiatingProcess{hash_type.upper()}']
+                    },
+                    related={'type': 'domain',
+                             'value': event['RemoteUrl']}
                 ))
 
-                self._make_2level_hash('sha256', event, origin)
-            else:
-                sha = self._get_hash(event['InitiatingProcessSHA1'])
-                if sha and sha.get('sha256'):
-                    event['InitiatingProcessSHA256'] = sha['sha256']
-                    self.relations.append(self._add_relation(
-                        origin=origin,
-                        relation='Connect_To',
-                        source={'type': 'domain',
-                                'value': event['RemoteUrl']},
-                        related={'type': 'sha1',
-                                 'value': event['InitiatingProcessSHA256']}
-                    ))
-
-                    self._make_2level_hash('sha256', event, origin)
-
-            if event['InitiatingProcessMD5']:
-                self.relations.append(self._add_relation(
-                    origin=origin,
-                    relation='Connect_To',
-                    source={'type': 'domain',
-                            'value': event['RemoteUrl']},
-                    related={'type': 'sha1',
-                             'value': event['InitiatingProcessMD5']}
-                ))
-
-                self._make_2level_hash('md5', event, origin)
-            else:
-                md5 = self._get_hash(event['InitiatingProcessSHA1'])
-                if md5 and md5.get('md5'):
-                    event['InitiatingProcessMD5'] = md5['md5']
-                    self.relations.append(self._add_relation(
-                        origin=origin,
-                        relation='Connect_To',
-                        source={'type': 'domain',
-                                'value': event['RemoteUrl']},
-                        related={'type': 'sha1',
-                                 'value': event['InitiatingProcessMD5']}
-                    ))
-
-                    self._make_2level_hash('md5', event, origin)
-
-        if event['RemoteUrl']:
             if event['RemoteIP']:
                 self.relations.append(self._add_relation(
                     origin=origin,
-                    relation='Resolved_To',
-                    source={'type': 'domain',
-                            'value': event['RemoteUrl']},
+                    relation='Connect_To',
+                    source={
+                        'type': hash_type,
+                        'value': event[
+                            f'InitiatingProcess{hash_type.upper()}']},
                     related={'type': 'ip',
                              'value': event['RemoteIP']}
                 ))
+            self._make_2level_hash(hash_type, event, origin)
 
-    def _build_relations_file(self, event, origin):
-        if event['SHA1']:
-            self._make_1level_hash('SHA1', event, origin)
+        if event['InitiatingProcessSHA1'] \
+                and (not event['InitiatingProcessSHA256']
+                     or not event['InitiatingProcessMD5']):
+            _, sha256, md5 = self._call_hashes(event['InitiatingProcessSHA1'])
+            event['InitiatingProcessSHA256'] = sha256
+            event['InitiatingProcessMD5'] = md5
 
-        if event['SHA256']:
-            self._make_1level_hash('SHA256', event, origin)
-        else:
-            sha = self._get_hash(event['SHA1'])
-            if sha and sha.get('sha256'):
-                event['SHA256'] = sha['sha256']
-                self._make_1level_hash('SHA256', event, origin)
-
-        if event['MD5']:
-            self._make_1level_hash('MD5', event, origin)
-        else:
-            md5 = self._get_hash(event['SHA1'])
-            if md5 and md5.get('md5'):
-                event['MD5'] = md5['md5']
-                self._make_1level_hash('MD5', event, origin)
+        elif event['InitiatingProcessSHA256'] \
+                and (not event['InitiatingProcessSHA1']
+                     or not event['InitiatingProcessMD5']):
+            sha1, _, md5 = self._call_hashes(event['InitiatingProcessSHA256'])
+            event['InitiatingProcessSHA1'] = sha1
+            event['InitiatingProcessMD5'] = md5
 
         if event['InitiatingProcessSHA1']:
-            self._make_2level_hash('SHA1', event, origin)
+            _make_relations_with_hash('sha1', event, origin)
 
         if event['InitiatingProcessSHA256']:
-            self._make_2level_hash('SHA256', event, origin)
-        else:
-            sha = self._get_hash(event['InitiatingProcessSHA1'])
-            if sha and sha.get('sha256'):
-                event['InitiatingProcessSHA256'] = sha['sha256']
-                self._make_2level_hash('SHA256', event, origin)
+            _make_relations_with_hash('sha256', event, origin)
 
         if event['InitiatingProcessMD5']:
+            _make_relations_with_hash('md5', event, origin)
+
+    def _build_relations_file(self, event, origin):
+
+        def _get_hashes(event, prefix=None):
+            key_sha1 = prefix + 'SHA1' if prefix else 'SHA1'
+            key_sha256 = prefix + 'SHA256' if prefix else 'SHA256'
+            key_md5 = prefix + 'MD5' if prefix else 'MD5'
+            if event[key_sha1] \
+                    and (not event[key_sha256]
+                         or not event[key_md5]):
+                _, sha256, md5 = self._call_hashes(event[key_sha1])
+                event[key_sha256] = sha256
+                event[key_md5] = md5
+
+            elif event[key_sha256] \
+                    and (not event[key_sha1]
+                         or not event[key_md5]):
+                sha1, _, md5 = self._call_hashes(event[key_sha256])
+                event[key_sha1] = sha1
+                event[key_md5] = md5
+
+            return event[key_sha1], event[key_sha256], event[key_md5]
+
+        sha1, sha256, md5 = _get_hashes(event)
+        if sha1:
+            self._make_1level_hash('SHA1', event, origin)
+
+        if sha256:
+            self._make_1level_hash('SHA256', event, origin)
+
+        if md5:
+            self._make_1level_hash('MD5', event, origin)
+
+        if any((sha1, sha256, md5)):
+            if event['FileOriginUrl']:
+                self.relations.append(self._add_relation(
+                    origin=origin,
+                    relation='Downloaded_From',
+                    source={'type': 'url',
+                            'value': event['FileOriginUrl']},
+                    related={'type': 'file_name',
+                             'value': event['FileName']}
+                ))
+            if event['FileOriginReferrerUrl']:
+                self.relations.append(self._add_relation(
+                    origin=origin,
+                    relation='Refers_To',
+                    source={'type': 'url',
+                            'value': event['FileOriginUrl']},
+                    related={'type': 'url',
+                             'value': event['FileOriginReferrerUrl']}
+                ))
+
+        init_sha1, init_sha256, init_md5 = _get_hashes(
+            event, prefix='InitiatingProcess')
+        if init_sha1:
+            self._make_2level_hash('SHA1', event, origin)
+
+        if init_sha256:
+            self._make_2level_hash('SHA256', event, origin)
+
+        if init_md5:
             self._make_2level_hash('MD5', event, origin)
-        else:
-            md5 = self._get_hash(event['SHA1'])
-            if md5 and md5.get('md5'):
-                event['InitiatingProcessMD5'] = md5['md5']
-                self._make_2level_hash('MD5', event, origin)
 
-        if event['SHA1'] and event['InitiatingProcessSHA1']:
+        if sha1 and init_sha1:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Parent_Of',
                 source={'type': 'sha1',
-                        'value': event['SHA1']},
+                        'value': sha1},
                 related={'type': 'sha1',
-                         'value': event['InitiatingProcessSHA1']}
+                         'value': init_sha1}
             ))
 
-        if event['SHA1'] and event['InitiatingProcessSHA256']:
+        if sha1 and init_sha256:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Parent_Of',
                 source={'type': 'sha1',
-                        'value': event['SHA1']},
+                        'value': sha1},
                 related={'type': 'sha256',
-                         'value': event['InitiatingProcessSHA256']}
+                         'value': init_sha256}
             ))
 
-        if event['SHA1'] and event['InitiatingProcessMD5']:
+        if sha1 and init_md5:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Parent_Of',
                 source={'type': 'sha1',
-                        'value': event['SHA1']},
+                        'value': sha1},
                 related={'type': 'md5',
-                         'value': event['InitiatingProcessMD5']}
+                         'value': init_md5}
             ))
 
-        if event['SHA256'] and event['InitiatingProcessSHA1']:
+        if sha256 and init_sha1:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Parent_Of',
                 source={'type': 'sha256',
-                        'value': event['SHA256']},
+                        'value': sha256},
                 related={'type': 'sha1',
-                         'value': event['InitiatingProcessSHA1']}
+                         'value': init_sha1}
             ))
 
-        if event['SHA256'] and event['InitiatingProcessSHA256']:
+        if sha256 and init_sha256:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Parent_Of',
                 source={'type': 'sha256',
-                        'value': event['SHA256']},
+                        'value': sha256},
                 related={'type': 'sha256',
-                         'value': event['InitiatingProcessSHA256']}
+                         'value': init_sha256}
             ))
 
-        if event['SHA256'] and event['InitiatingProcessMD5']:
+        if sha256 and init_md5:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Parent_Of',
                 source={'type': 'sha256',
-                        'value': event['SHA256']},
+                        'value': sha256},
                 related={'type': 'md5',
-                         'value': event['InitiatingProcessMD5']}
+                         'value': init_md5}
             ))
 
-        if event['MD5'] and event['InitiatingProcessSHA1']:
+        if md5 and init_sha1:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Parent_Of',
                 source={'type': 'md5',
-                        'value': event['MD5']},
+                        'value': md5},
                 related={'type': 'sha1',
-                         'value': event['InitiatingProcessSHA1']}
+                         'value': init_sha1}
             ))
 
-        if event['MD5'] and event['InitiatingProcessSHA256']:
+        if md5 and init_sha256:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Parent_Of',
                 source={'type': 'md5',
-                        'value': event['MD5']},
+                        'value': md5},
                 related={'type': 'sha256',
-                         'value': event['InitiatingProcessSHA256']}
+                         'value': init_sha256}
             ))
 
-        if event['MD5'] and event['InitiatingProcessMD5']:
+        if md5 and init_md5:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Parent_Of',
                 source={'type': 'md5',
-                        'value': event['MD5']},
+                        'value': md5},
                 related={'type': 'md5',
-                         'value': event['InitiatingProcessMD5']}
-            ))
-
-        if event['FileOriginUrl']:
-            self.relations.append(self._add_relation(
-                origin=origin,
-                relation='Downloaded_From',
-                source={'type': 'url',
-                        'value': event['FileOriginUrl']},
-                related={'type': 'file_name',
-                         'value': event['FileName']}
-            ))
-        if event['FileOriginReferrerUrl']:
-            self.relations.append(self._add_relation(
-                origin=origin,
-                relation='Refers_To',
-                source={'type': 'url',
-                        'value': event['FileOriginUrl']},
-                related={'type': 'url',
-                         'value': event['FileOriginReferrerUrl']}
+                         'value': init_md5}
             ))
 
     def _make_1level_hash(self, type_hash, event, origin):
@@ -340,6 +352,25 @@ class Mapping:
             {'type': 'ip', 'value': res['lastIpAddress']}
         ]
 
+        query = "DeviceNetworkInfo " \
+                "| where DeviceId == '{device_id}' " \
+                "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) " \
+                "by DeviceId, " \
+                "NetworkAdapterType, " \
+                "MacAddress, " \
+                "DeviceName, " \
+                "IPAddresses".format(device_id=alert['machineId'])
+
+        query = json.dumps({'Query': query}).encode('utf-8')
+        result, error = self.client.call_api(
+            self._adv_hunting_url,
+            'POST', query)
+
+        if result and result.get('Results'):
+            for item in result['Results']:
+                observables.append(
+                    {'type': 'mac_address', 'value': item['MacAddress']})
+
         return {
             'type': 'endpoint',
             'os': res['osPlatform'],
@@ -370,7 +401,7 @@ class Mapping:
 
         query = json.dumps({'Query': query}).encode('utf-8')
         result, error = self.client.call_api(
-            current_app.config['ADVANCED_HUNTING_URL'],
+            self._adv_hunting_url,
             'POST', query)
 
         if result and result.get('Results'):
@@ -438,58 +469,147 @@ class Mapping:
         if alert['computerDnsName']:
             targets.append(self._get_target_from_alert(alert))
 
+        sha1 = None
+        sha256 = None
+        md5 = None
+        ip = None
+        url = None
+
         for evidence in alert['evidence']:
+            if evidence.get('entityType') == 'Process':
 
-            if evidence.get('parentProcessId'):
-                for e in alert['evidence']:
-                    if e['processId'] == evidence['parentProcessId']:
-                        self.relations.append(
-                            self._add_relation(
-                                origin=alert['detectionSource'],
-                                relation='Injected_Into',
-                                source={'value': evidence['fileName'],
-                                        'type': 'file_name'},
-                                related={'value': e['fileName'],
-                                         'type': 'file_name'}
-                            )
-                        )
-
-            if evidence['sha1']:
-                self._make_1level_hash(
-                    'sha1',
-                    evidence,
-                    alert['detectionSource']
-                )
-                if not evidence.get('sha256'):
-                    sha = self._get_hash(evidence['sha1'])
-                    if sha and sha.get('sha256'):
-                        evidence['sha256'] = sha['sha256']
-                        self._make_1level_hash(
-                            'sha256',
-                            evidence,
-                            alert['detectionSource']
-                        )
+                if evidence.get('sha1') and evidence.get('sha256') \
+                        and evidence.get('md5'):
+                    sha1 = evidence['sha1']
+                    sha256 = evidence['sha256']
+                    md5 = evidence['md5']
                 else:
+                    if evidence.get('sha1') \
+                            and (not evidence.get('sha256')
+                                 or not evidence.get('md5')):
+                        sha1 = evidence['sha1']
+                        _, sha256, md5 = self._call_hashes(sha1)
+
+                    elif evidence.get('sha256') \
+                            and (not evidence.get('sha1')
+                                 or not evidence.get('md5')):
+                        sha256 = evidence['sha256']
+                        sha1, _, md5 = self._call_hashes(sha256)
+
+                    evidence['sha1'] = sha1
+                    evidence['sha256'] = sha256
+                    evidence['md5'] = md5
+
+                if sha1:
+                    self._make_1level_hash(
+                        'sha1',
+                        evidence,
+                        alert['detectionSource']
+                    )
+                if sha256:
                     self._make_1level_hash(
                         'sha256',
                         evidence,
                         alert['detectionSource']
                     )
-                if not evidence.get('md5'):
-                    md5 = self._get_hash(evidence['sha1'])
-                    if md5 and md5.get('md5'):
-                        evidence['md5'] = md5['md5']
-                        self._make_1level_hash(
-                            'md5',
-                            evidence,
-                            alert['detectionSource']
-                        )
-                else:
+                if md5:
                     self._make_1level_hash(
                         'md5',
                         evidence,
                         alert['detectionSource']
                     )
+
+                if evidence.get('parentProcessId'):
+                    for e in alert['evidence']:
+                        if e['processId'] == evidence['parentProcessId']:
+                            if sha1 and e.get('sha1'):
+                                self.relations.append(
+                                    self._add_relation(
+                                        origin=alert['detectionSource'],
+                                        relation='Injected_Into',
+                                        source={'value': sha1,
+                                                'type': 'sha1'},
+                                        related={'value': e['sha1'],
+                                                 'type': 'sha1'}
+                                    )
+                                )
+                            if sha1 and e.get('sha256'):
+                                self.relations.append(
+                                    self._add_relation(
+                                        origin=alert['detectionSource'],
+                                        relation='Injected_Into',
+                                        source={'value': sha1,
+                                                'type': 'sha1'},
+                                        related={'value': e['sha256'],
+                                                 'type': 'sha256'}
+                                    )
+                                )
+                            if sha256 and e.get('sha1'):
+                                self.relations.append(
+                                    self._add_relation(
+                                        origin=alert['detectionSource'],
+                                        relation='Injected_Into',
+                                        source={'value': sha256,
+                                                'type': 'sha256'},
+                                        related={'value': e['sha1'],
+                                                 'type': 'sha1'}
+                                    )
+                                )
+                            if sha256 and e.get('sha256'):
+                                self.relations.append(
+                                    self._add_relation(
+                                        origin=alert['detectionSource'],
+                                        relation='Injected_Into',
+                                        source={'value': sha256,
+                                                'type': 'sha256'},
+                                        related={'value': e['sha256'],
+                                                 'type': 'sha256'}
+                                    )
+                                )
+
+            if evidence.get('entityType') == 'Ip':
+                ip = evidence.get('ipAddress')
+
+            if evidence.get('entityType') == 'Url':
+                url = evidence.get('url')
+
+            def _make_relations_with_hash(hash_type, hash_value, ip_address, url_address):
+                if url_address:
+                    self.relations.append(self._add_relation(
+                        origin=alert['detectionSource'],
+                        relation='Connect_To',
+                        source={'type': hash_type,
+                                'value': hash_value},
+                        related={'type': 'domain',
+                                 'value': url_address}
+                    ))
+
+                if ip_address:
+                    self.relations.append(self._add_relation(
+                        origin=alert['detectionSource'],
+                        relation='Connect_To',
+                        source={'type': hash_type,
+                                'value': hash_value},
+                        related={'type': 'ip',
+                                 'value': ip_address}
+                    ))
+
+            if url and ip:
+                self.relations.append(self._add_relation(
+                    origin=alert['detectionSource'],
+                    relation='Resolved_To',
+                    source={'type': 'domain',
+                            'value': url},
+                    related={'type': 'ip',
+                             'value': ip}
+                ))
+
+            if sha1:
+                _make_relations_with_hash('sha1', sha1, ip, url)
+            if sha256:
+                _make_relations_with_hash('sha256', sha256, ip, url)
+            if md5:
+                _make_relations_with_hash('md5', md5, ip, url)
 
         sighting['targets'] = targets
         sighting['relations'] = self.relations

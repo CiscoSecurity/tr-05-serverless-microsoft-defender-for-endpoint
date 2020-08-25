@@ -1,6 +1,8 @@
 import json
+from os import cpu_count
 from functools import partial
 from flask import Blueprint, current_app, g
+from concurrent.futures import ThreadPoolExecutor
 
 from api.schemas import ObservableSchema
 from api.utils import (get_json, get_jwt, jsonify_data, jsonify_errors,
@@ -46,6 +48,7 @@ def get_alert(client, observable):
 
 
 def call_advanced_hunting(client, o_value, o_type, limit):
+
     queries = {
         'sha1': "DeviceFileEvents "
                 "| where SHA1 == '{o_value}' "
@@ -123,19 +126,26 @@ def observe_observables():
 
         mapping = Mapping(client, observable, count, entity)
 
-        for alert in alerts:
-            sighting = mapping.build_sighting_from_alert(alert)
+        with ThreadPoolExecutor(
+                max_workers=min(
+                    len(alerts),
+                    cpu_count() or 1
+                ) * 5) as executor:
+            alerts = executor.map(mapping.build_sighting_from_alert, alerts)
+            events = executor.map(mapping.build_sighting_from_ah, events)
 
-            g.sightings.append(sighting)
-
-        for event in events:
-            sighting = mapping.build_sighting_from_ah(event)
-            g.sightings.append(sighting)
+        [g.sightings.append(sighting) for sighting in alerts]
+        [g.sightings.append(sighting) for sighting in events]
 
     client.close_session()
 
     if g.sightings:
         data['sightings'] = format_docs(g.sightings)
+
+    # TODO: Remove logger
+    current_app.logger.error('### Output for /observe/observables')
+    current_app.logger.error(data)
+    current_app.logger.error('#########')
 
     return jsonify_data(data)
 
