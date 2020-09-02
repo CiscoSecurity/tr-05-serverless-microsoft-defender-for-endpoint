@@ -16,11 +16,13 @@ class Client:
         self.session = None
         self.credentials = credentials
         self.base_url = current_app.config['API_URL']
+        self.request_count = 0
 
     def open_session(self):
         self.session = requests.Session()
 
     def close_session(self):
+        print('Request', ':', self.request_count)
         self.session.close()
 
     def format_url(self, entity, value, path=None):
@@ -47,7 +49,7 @@ class Client:
                 self._auth()
                 self.call_api(method, data)
             elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-                raise CTRTooManyRequestsError
+                raise CTRTooManyRequestsError(response)
             elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
                 raise CTRInternalServerError
             else:
@@ -55,6 +57,7 @@ class Client:
         else:
             result = response.json()
         # TODO: Remove print
+        self.request_count += 1
         print(url, ':', data, '=', time.time() - start)
         return result, error
 

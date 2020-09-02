@@ -829,7 +829,12 @@ AH_RESPONSE = {
             "SensitivitySubLabel": "",
             "IsAzureInfoProtectionApplied": None,
             "ReportId": 14689,
-            "AppGuardContainerId": ""
+            "AppGuardContainerId": "",
+            "MacAddress": "00224843C030",
+            "IPAddresses": '[{"IPAddress": "10.1.1.68", "SubnetPrefix": 26, '
+                           '"AddressType": "Private"}, '
+                           '{"IPAddress": "fe80::6d25:8926:20c3:49ea", '
+                           '"SubnetPrefix": 64, "AddressType": "Private"}]'
         },
     ]
 }

@@ -52,18 +52,38 @@ def call_advanced_hunting(client, o_value, o_type, limit):
     queries = {
         'sha1': "DeviceFileEvents "
                 "| where SHA1 == '{o_value}' "
+                "| join kind=leftouter (DeviceNetworkInfo "
+                "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
+                "by DeviceId, NetworkAdapterType, MacAddress, "
+                "DeviceName, IPAddresses) on DeviceId"
                 "| limit {limit}",
         'sha256': "DeviceFileEvents "
                   "| where SHA256 == '{o_value}' "
+                  "| join kind=leftouter (DeviceNetworkInfo "
+                  "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
+                  "by DeviceId, NetworkAdapterType, MacAddress, "
+                  "DeviceName, IPAddresses) on DeviceId"
                   "| limit {limit}",
         'md5': "DeviceFileEvents "
                "| where MD5 == '{o_value}' "
+               "| join kind=leftouter (DeviceNetworkInfo "
+               "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
+               "by DeviceId, NetworkAdapterType, MacAddress, "
+               "DeviceName, IPAddresses) on DeviceId"
                "| limit {limit}",
         'ip': "DeviceNetworkEvents "
               "| where RemoteIP == '{o_value}' "
+              "| join kind=leftouter (DeviceNetworkInfo "
+              "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
+              "by DeviceId, NetworkAdapterType, MacAddress, "
+              "DeviceName, IPAddresses) on DeviceId"
               "| limit {limit}",
         'domain': "DeviceNetworkEvents "
                   "| where RemoteUrl == '{o_value}' "
+                  "| join kind=leftouter (DeviceNetworkInfo "
+                  "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
+                  "by DeviceId, NetworkAdapterType, MacAddress, "
+                  "DeviceName, IPAddresses) on DeviceId"
                   "| limit {limit}"
     }
     query = queries[o_type].format(o_value=o_value, limit=limit)
@@ -126,16 +146,25 @@ def observe_observables():
 
         mapping = Mapping(client, observable, count, entity)
 
-        with ThreadPoolExecutor(
-                max_workers=min(
-                    len(alerts),
-                    cpu_count() or 1
-                ) * 5) as executor:
-            alerts = executor.map(mapping.build_sighting_from_alert, alerts)
-            events = executor.map(mapping.build_sighting_from_ah, events)
+        if alerts:
+            with ThreadPoolExecutor(
+                    max_workers=min(
+                        len(alerts),
+                        cpu_count() or 1
+                    ) * 5) as executor:
+                alerts = executor.map(mapping.build_sighting_from_alert, alerts)
 
-        [g.sightings.append(sighting) for sighting in alerts]
-        [g.sightings.append(sighting) for sighting in events]
+            [g.sightings.append(alert) for alert in alerts if alert]
+
+        if events:
+            with ThreadPoolExecutor(
+                    max_workers=min(
+                        len(events),
+                        cpu_count() or 1
+                    ) * 5) as executor:
+                events = executor.map(mapping.build_sighting_from_ah, events)
+
+            [g.sightings.append(event) for event in events if event]
 
     client.close_session()
 
@@ -143,9 +172,10 @@ def observe_observables():
         data['sightings'] = format_docs(g.sightings)
 
     # TODO: Remove logger
-    current_app.logger.error('### Output for /observe/observables')
-    current_app.logger.error(data)
-    current_app.logger.error('#########')
+    # print('### Output for /observe/observables', ':', data)
+    # current_app.logger.error('### Output for /observe/observables')
+    # current_app.logger.error(data)
+    # current_app.logger.error('#########')
 
     return jsonify_data(data)
 

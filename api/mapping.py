@@ -1,5 +1,6 @@
 import uuid
 import json
+from functools import lru_cache
 
 from flask import current_app
 
@@ -36,6 +37,7 @@ class Mapping:
         self.relations = []
         self._adv_hunting_url = current_app.config['ADVANCED_HUNTING_URL']
 
+    @lru_cache(maxsize=512)
     def _call_hashes(self, value):
         sha1 = sha256 = md5 = None
 
@@ -343,14 +345,40 @@ class Mapping:
                          'value': event[f'InitiatingProcess{upper_th}']}
             ))
 
-    def _get_target_from_alert(self, alert):
-        url = self.client.format_url('machines', alert['machineId'])
+    @lru_cache(maxsize=512)
+    def _get_os_info(self, device_id):
+        """
+        https://docs.microsoft.com/en-us/windows/security/threat-protection
+        /microsoft-defender-atp/get-machine-by-id
+
+        Queries information about a specific machine and
+        gets the operating system.
+        :param device_id:
+        :return:
+        """
+        url = self.client.format_url('machines', device_id)
         res = self.client.call_api(url)[0]
 
-        observables = [
-            {'type': 'hostname', 'value': alert['computerDnsName']},
-            {'type': 'ip', 'value': res['lastIpAddress']}
-        ]
+        os = res['osPlatform']
+        if res.get('osProcessor'):
+            os += res['osProcessor']
+        if res.get('version'):
+            os = os + ' version: ' + res['version']
+        return os
+
+    @lru_cache(maxsize=512)
+    def _get_network_info(self, device_id):
+        """
+        https://docs.microsoft.com/en-us/windows/security/threat-protection
+        /microsoft-defender-atp/run-advanced-query-api
+
+        Queries information about network interface for a specific machine.
+        :param device_id: A device ID
+        :return: <list> - A list of dictionaries consisting of MAC-addresses
+        and IP(IPv6)s or empty list
+        """
+
+        observables = []
 
         query = "DeviceNetworkInfo " \
                 "| where DeviceId == '{device_id}' " \
@@ -359,21 +387,43 @@ class Mapping:
                 "NetworkAdapterType, " \
                 "MacAddress, " \
                 "DeviceName, " \
-                "IPAddresses".format(device_id=alert['machineId'])
+                "IPAddresses".format(device_id=device_id)
 
         query = json.dumps({'Query': query}).encode('utf-8')
-        result, error = self.client.call_api(
+        response, error = self.client.call_api(
             self._adv_hunting_url,
             'POST', query)
 
-        if result and result.get('Results'):
-            for item in result['Results']:
+        if response and response.get('Results'):
+            for item in response['Results']:
                 observables.append(
                     {'type': 'mac_address', 'value': item['MacAddress']})
 
+                for ips_info in json.loads(item['IPAddresses']):
+                    if ips_info.get('SubnetPrefix') == 64:
+                        observables.append(
+                            {'type': 'ipv6', 'value': ips_info['IPAddress']}
+                        )
+                    elif ips_info.get('SubnetPrefix') == 24:
+                        observables.append(
+                            {'type': 'ip', 'value': ips_info['IPAddress']}
+                        )
+        return observables
+
+    def _get_target_from_alert(self, alert):
+
+        observables = [
+            {'type': 'hostname', 'value': alert['computerDnsName']},
+        ]
+
+        os = self._get_os_info(alert['machineId'])
+        networks = self._get_network_info(alert['machineId'])
+        if networks:
+            observables.extend(networks)
+
         return {
             'type': 'endpoint',
-            'os': res['osPlatform'],
+            'os': os,
             'observables': observables,
             'observed_time': {
                 'start_time': alert['firstEventTime'],
@@ -382,36 +432,33 @@ class Mapping:
         }
 
     def _get_target_from_ah(self, event):
-        url = self.client.format_url('machines', event['DeviceId'])
-        res = self.client.call_api(url)[0]
 
         observables = [
             {'type': 'hostname', 'value': event['DeviceName']},
-            {'type': 'ip', 'value': res['lastIpAddress']}
         ]
 
-        query = "DeviceNetworkInfo " \
-                "| where DeviceId == '{device_id}' " \
-                "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) " \
-                "by DeviceId, " \
-                "NetworkAdapterType, " \
-                "MacAddress, " \
-                "DeviceName, " \
-                "IPAddresses".format(device_id=event['DeviceId'])
+        os = self._get_os_info(event['DeviceId'])
 
-        query = json.dumps({'Query': query}).encode('utf-8')
-        result, error = self.client.call_api(
-            self._adv_hunting_url,
-            'POST', query)
+        observables.append(
+            {'type': 'mac_address', 'value': event['MacAddress']})
 
-        if result and result.get('Results'):
-            for item in result['Results']:
+        for ips_info in json.loads(event['IPAddresses']):
+            if ips_info.get('SubnetPrefix') == 64:
                 observables.append(
-                    {'type': 'mac_address', 'value': item['MacAddress']})
+                    {'type': 'ipv6', 'value': ips_info['IPAddress']}
+                )
+            elif ips_info.get('SubnetPrefix') == 24:
+                observables.append(
+                    {'type': 'ip', 'value': ips_info['IPAddress']}
+                )
+
+        # networks = self._get_network_info(event['DeviceId'])
+        # if networks:
+        #     observables.extend(networks)
 
         return {
             'type': 'endpoint',
-            'os': res['osPlatform'],
+            'os': os,
             'observables': observables,
             'observed_time': {
                 'start_time': event['Timestamp'],
@@ -476,7 +523,7 @@ class Mapping:
         url = None
 
         for evidence in alert['evidence']:
-            if evidence.get('entityType') == 'Process':
+            if evidence.get('entityType') in ('Process', 'File') :
 
                 if evidence.get('sha1') and evidence.get('sha256') \
                         and evidence.get('md5'):
