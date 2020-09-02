@@ -46,7 +46,6 @@ def get_json(schema):
     return data, error
 
 
-
 def format_docs(docs):
     return {'count': len(docs), 'docs': docs}
 

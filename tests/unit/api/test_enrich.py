@@ -83,7 +83,8 @@ def test_enrich_call_success(call_api, route, client, valid_jwt,
 
     exp_target_observables = [
         {'type': 'hostname', 'value': 'desktop-au3ip5k'},
-        {'type': 'ip', 'value': '172.17.230.209'}
+        {'type': 'mac_address', 'value': '00224843C030'},
+        {'type': 'ipv6', 'value': 'fe80::6d25:8926:20c3:49ea'}
     ]
 
     call_api.side_effect = [

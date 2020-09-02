@@ -1,6 +1,3 @@
-from flask import current_app
-
-
 INVALID_REQUEST = 'invalid request'
 PERMISSION_DENIED = 'permission denied'
 UNKNOWN = 'unknown'

@@ -523,7 +523,7 @@ class Mapping:
         url = None
 
         for evidence in alert['evidence']:
-            if evidence.get('entityType') in ('Process', 'File') :
+            if evidence.get('entityType') in ('Process', 'File'):
 
                 if evidence.get('sha1') and evidence.get('sha256') \
                         and evidence.get('md5'):
@@ -620,7 +620,8 @@ class Mapping:
             if evidence.get('entityType') == 'Url':
                 url = evidence.get('url')
 
-            def _make_relations_with_hash(hash_type, hash_value, ip_address, url_address):
+            def _make_relations_with_hash(hash_type, hash_value,
+                                          ip_address, url_address):
                 if url_address:
                     self.relations.append(self._add_relation(
                         origin=alert['detectionSource'],

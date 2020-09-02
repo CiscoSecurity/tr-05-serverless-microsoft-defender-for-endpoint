@@ -152,7 +152,8 @@ def observe_observables():
                         len(alerts),
                         cpu_count() or 1
                     ) * 5) as executor:
-                alerts = executor.map(mapping.build_sighting_from_alert, alerts)
+                alerts = executor.map(mapping.build_sighting_from_alert,
+                                      alerts)
 
             [g.sightings.append(alert) for alert in alerts if alert]
 
