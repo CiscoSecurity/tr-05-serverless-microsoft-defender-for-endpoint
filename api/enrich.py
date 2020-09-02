@@ -172,12 +172,6 @@ def observe_observables():
     if g.sightings:
         data['sightings'] = format_docs(g.sightings)
 
-    # TODO: Remove logger
-    # print('### Output for /observe/observables', ':', data)
-    # current_app.logger.error('### Output for /observe/observables')
-    # current_app.logger.error(data)
-    # current_app.logger.error('#########')
-
     return jsonify_data(data)
 
 

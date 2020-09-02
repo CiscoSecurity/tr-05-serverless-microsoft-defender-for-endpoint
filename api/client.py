@@ -1,5 +1,4 @@
 import requests
-import time
 from flask import current_app
 from http import HTTPStatus
 
@@ -16,13 +15,11 @@ class Client:
         self.session = None
         self.credentials = credentials
         self.base_url = current_app.config['API_URL']
-        self.request_count = 0
 
     def open_session(self):
         self.session = requests.Session()
 
     def close_session(self):
-        print('Request', ':', self.request_count)
         self.session.close()
 
     def format_url(self, entity, value, path=None):
@@ -32,7 +29,6 @@ class Client:
         return url
 
     def call_api(self, url, method='GET', data=None):
-        start = time.time()
         error = None
         result = None
 
@@ -56,9 +52,6 @@ class Client:
                 error = str(response.json()['error'])
         else:
             result = response.json()
-        # TODO: Remove print
-        self.request_count += 1
-        print(url, ':', data, '=', time.time() - start)
         return result, error
 
     def _set_headers(self, response):
