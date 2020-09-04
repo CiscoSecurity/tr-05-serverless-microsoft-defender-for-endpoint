@@ -245,18 +245,26 @@ header set to `Bearer <JWT>`.
   - Returns a list per each of the following CTIM entities (if any extracted):
     - `Sighting`.
 
-- `POST /refer/observables`
+- `POST /respond/observables`
   - Accepts a list of observables and filters out unsupported ones.
-  - Builds a search link per each supported observable to pivot back to the
-  underlying external service and look up the observable there.
-  - Returns a list of those links.
+  - Verifies the Authorization Bearer JWT and decodes it to restore the
+  original credentials.
+  - Makes a series of requests to the underlying external service to query for
+  actions available for given observables.
+  - Returns a list of those actions.
+
+- `POST /respond/trigger`
+  - Accepts an observable and an action.
+  - Verifies the Authorization Bearer JWT and decodes it to restore the
+  original credentials.
+  - Triggers an action at the underlying external service.
+  - Returns an action result.
 
 ### Supported Types of Observables
 
 - `ip`
 - `ipv6`
 - `domain`
-- `md5`
 - `sha1`
 - `sha256`
 
@@ -295,6 +303,7 @@ The following permissions are required to work with this module.
   - Applies to the following CTIM entities:
     - `Sighting`.
   - Must be a positive integer. Defaults to `100` (if unset or incorrect).
+  > **Warning**: When you receive the "Advanced Hunting API rate limit has been exceeded. ..." error, you can fix this by decreasing the value of the "CTR_ENTITES_LIMIT" variable. 
 
 ### CTIM Mapping Specifics
 
@@ -306,13 +315,19 @@ Each `Sighting` for a supported observable is based on a matching alert or event
 which happened on one of the machines that were added to the monitoring of Microsoft Defender ATP. 
 Alerts and events from the Advanced Hunting API have different response structures. 
 Events depend on the types of observable and the differences between them. 
+
+Steps performed when interacting with the service:
+  1. We make a request to receive Defender ATP alerts.
+  2. If the number of alerts is fewer than the value of the `CTR_ENTITIES_LIMIT` variable then we make a request to the Advanced Hunting API.
+  3. For each alert we get additional information by making a request to the [Defender ATP endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id) and the Advanced Hunting API.
+  4. When processing events we make a request to [Defender ATP endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id) to receive additional information.
+
 There are examples of mapping fields for alerts below:
 
 - `description` of an alert is mapped to `description` of a Sighting, but the event does not have this field.
 
 - `targets` of a `Sighting` are based on `computerDnsName` of an alert. 
   We make a request to [endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id) using `machineId`
-  - `lastIpAddress` is used in `targets[].observables[]` as `{"type": "ip", "value": <lastIpAddress>}`
   - `osPlatform` as `targets[].os`
   - `firstEventTime` as `targets[].observed_time.start_time`
  
