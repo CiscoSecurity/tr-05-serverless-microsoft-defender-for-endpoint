@@ -284,16 +284,42 @@ to list [alerts](https://docs.microsoft.com/en-us/windows/security/threat-protec
 and [Advanced hunting API](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/run-advanced-query-api). 
 The following permissions are required to work with this module.
 
-| Permission type                    | Permission             | Permission display name     |
-|------------------------------------|------------------------|-----------------------------|
-| Application                        | File.Read.All          | 'Read all file profiles'    |
-| Application                        | Alert.Read.All         | 'Read all alerts'           |
-| Application                        | Alert.ReadWrite.All    | 'Read and write all alerts' |
-| Application                        | AdvancedQuery.Read.All | 'Run advanced queries'      |
-| Delegated (work or school account) | File.Read.All          | 'Read all file profiles'    |
-| Delegated (work or school account) | Alert.Read             | 'Read alerts'               |
-| Delegated (work or school account) | Alert.ReadWrite        | 'Read and write alerts'     |
-| Delegated (work or school account) | AdvancedQuery.Read     | 'Run advanced queries'      |
+| Permission type                    | Permission             | Permission display name                  |
+|------------------------------------|------------------------|------------------------------------------|
+| Application                        | File.Read.All          | 'Read all file profiles'                 |
+| Application                        | Alert.Read.All         | 'Read all alerts'                        |
+| Application                        | Alert.ReadWrite.All    | 'Read and write all alerts'              |
+| Application                        | Machine.Read.All       | 'Read all machine profiles'              |
+| Application                        | Machine.ReadWrite.All  | 'Read and write all machine information' |
+| Application                        | AdvancedQuery.Read.All | 'Run advanced queries'                   |
+| Delegated (work or school account) | File.Read.All          | 'Read all file profiles'                 |
+| Delegated (work or school account) | Alert.Read             | 'Read alerts'                            |
+| Delegated (work or school account) | Alert.ReadWrite        | 'Read and write alerts'                  |
+| Delegated (work or school account) | Machine.Read           | 'Read machine information'               |
+| Delegated (work or school account) | Machine.ReadWrite      | 'Read and write machine information'     |
+| Delegated (work or school account) | AdvancedQuery.Read     | 'Run advanced queries'                   |
+
+The following permissions are required to use **actions** for machines.
+
+| Action                             | Permission type                    | Permission                 | Permission display name        |
+|------------------------------------|------------------------------------|----------------------------|--------------------------------|
+| Collect investigation package API  | Application                        | Machine.CollectForensics   | 'Collect forensics'            |
+| Isolate machine API                | Application                        | Machine.Isolate            | 'Isolate machine'              |
+| Release device from isolation API  | Application                        | Machine.Isolate            | 'Isolate machine'              |
+| Restrict app execution API         | Application                        | Machine.RestrictExecution  | 'Restrict code execution'      |
+| Remove app restriction API         | Application                        | Machine.RestrictExecution  | 'Restrict code execution'      |
+| Run antivirus scan API             | Application                        | Machine.Scan               | 'Scan machine'                 |
+| Submit or Update Indicator API     | Application                        | Ti.ReadWrite               | 'Read and write Indicators'    |
+| Submit or Update Indicator API     | Application                        | Ti.ReadWrite.All           | 'Read and write All Indicators'|
+| Start Investigation API            | Application                        | Alert.ReadWrite.All        | 'Read and write all alerts'    |
+| Collect investigation package API  | Delegated (work or school account) | Machine.CollectForensics   | 'Collect forensics'            |
+| Isolate machine API                | Delegated (work or school account) | Machine.Isolate            | 'Isolate machine'              |
+| Release device from isolation API  | Delegated (work or school account) | Machine.Isolate            | 'Isolate machine'              |
+| Restrict app execution API         | Delegated (work or school account) | Machine.RestrictExecution  | 'Restrict code execution'      |
+| Remove app restriction API         | Delegated (work or school account) | Machine.RestrictExecution  | 'Restrict code execution'      |
+| Run antivirus scan API             | Delegated (work or school account) | Machine.Scan               | 'Scan machine'                 |
+| Submit or Update Indicator API     | Delegated (work or school account) | Ti.ReadWrite               | 'Read and write Indicators'    |
+| Start Investigation API            | Delegated (work or school account) | Alert.ReadWrite            | 'Read and write alerts'        |
 
 ### Supported Environment Variables
 
