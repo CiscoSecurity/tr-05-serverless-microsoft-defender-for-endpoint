@@ -46,6 +46,10 @@ def get_json(schema):
     return data, error
 
 
+def format_docs(docs):
+    return {'count': len(docs), 'docs': docs}
+
+
 def jsonify_data(data):
     return jsonify({'data': data})
 
@@ -61,7 +65,7 @@ def jsonify_errors(error):
     data = {'errors': [error]}
 
     if g.get('sightings') and g.sightings:
-        data['data'] = {'sightings': g.sightings}
+        data['data'] = {'sightings': format_docs(g.sightings)}
 
     return jsonify(data)
 
@@ -82,7 +86,3 @@ def group_observables(relay_input):
             result.append(obj)
 
     return result
-
-
-def format_docs(docs):
-    return {'count': len(docs), 'docs': docs}

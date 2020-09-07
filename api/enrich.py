@@ -1,13 +1,15 @@
 import json
+from os import cpu_count
 from functools import partial
 from flask import Blueprint, current_app, g
+from concurrent.futures import ThreadPoolExecutor
 
 from api.schemas import ObservableSchema
 from api.utils import (get_json, get_jwt, jsonify_data, jsonify_errors,
                        group_observables, format_docs)
 from api.errors import CTRBadRequestError
 from api.client import Client
-from api.mapping import get_sightings_from_ah, get_sightings_from_alert
+from api.mapping import Mapping
 
 enrich_api = Blueprint('enrich', __name__)
 
@@ -46,21 +48,42 @@ def get_alert(client, observable):
 
 
 def call_advanced_hunting(client, o_value, o_type, limit):
+
     queries = {
         'sha1': "DeviceFileEvents "
                 "| where SHA1 == '{o_value}' "
+                "| join kind=leftouter (DeviceNetworkInfo "
+                "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
+                "by DeviceId, NetworkAdapterType, MacAddress, "
+                "DeviceName, IPAddresses) on DeviceId"
                 "| limit {limit}",
         'sha256': "DeviceFileEvents "
                   "| where SHA256 == '{o_value}' "
+                  "| join kind=leftouter (DeviceNetworkInfo "
+                  "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
+                  "by DeviceId, NetworkAdapterType, MacAddress, "
+                  "DeviceName, IPAddresses) on DeviceId"
                   "| limit {limit}",
         'md5': "DeviceFileEvents "
                "| where MD5 == '{o_value}' "
+               "| join kind=leftouter (DeviceNetworkInfo "
+               "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
+               "by DeviceId, NetworkAdapterType, MacAddress, "
+               "DeviceName, IPAddresses) on DeviceId"
                "| limit {limit}",
         'ip': "DeviceNetworkEvents "
               "| where RemoteIP == '{o_value}' "
+              "| join kind=leftouter (DeviceNetworkInfo "
+              "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
+              "by DeviceId, NetworkAdapterType, MacAddress, "
+              "DeviceName, IPAddresses) on DeviceId"
               "| limit {limit}",
         'domain': "DeviceNetworkEvents "
                   "| where RemoteUrl == '{o_value}' "
+                  "| join kind=leftouter (DeviceNetworkInfo "
+                  "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
+                  "by DeviceId, NetworkAdapterType, MacAddress, "
+                  "DeviceName, IPAddresses) on DeviceId"
                   "| limit {limit}"
     }
     query = queries[o_type].format(o_value=o_value, limit=limit)
@@ -121,18 +144,28 @@ def observe_observables():
                 current_app.config['CTR_ENTITIES_LIMIT'] - count)
             count = count + len(events)
 
-        for alert in alerts:
-            sighting = get_sightings_from_alert(client, alert,
-                                                observable, count, entity)
+        mapping = Mapping(client, observable, count, entity)
 
-            g.sightings.append(sighting)
+        if alerts:
+            with ThreadPoolExecutor(
+                    max_workers=min(
+                        len(alerts),
+                        cpu_count() or 1
+                    ) * 5) as executor:
+                alerts = executor.map(mapping.build_sighting_from_alert,
+                                      alerts)
 
-        for event in events:
-            sighting = get_sightings_from_ah(client,
-                                             event,
-                                             observable,
-                                             count)
-            g.sightings.append(sighting)
+            [g.sightings.append(alert) for alert in alerts if alert]
+
+        if events:
+            with ThreadPoolExecutor(
+                    max_workers=min(
+                        len(events),
+                        cpu_count() or 1
+                    ) * 5) as executor:
+                events = executor.map(mapping.build_sighting_from_ah, events)
+
+            [g.sightings.append(event) for event in events if event]
 
     client.close_session()
 

@@ -45,7 +45,7 @@ class Client:
                 self._auth()
                 self.call_api(method, data)
             elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-                raise CTRTooManyRequestsError
+                raise CTRTooManyRequestsError(response)
             elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
                 raise CTRInternalServerError
             else:

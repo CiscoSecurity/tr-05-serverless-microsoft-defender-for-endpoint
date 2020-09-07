@@ -69,9 +69,14 @@ class CTRInternalServerError(CTRBaseError):
 
 
 class CTRTooManyRequestsError(CTRBaseError):
-    def __init__(self):
+    def __init__(self, response=None):
+        if '/advancedqueries/run' in response.url:
+            message = f'Advanced Hunting API rate limit has been exceeded. ' \
+                      f'{response.json()["error"]}'
+        else:
+            message = 'Too many requests to Microsoft Defender ATP ' \
+                      'have been made. Please, try again later.'
         super().__init__(
             TOO_MANY_REQUESTS,
-            'Too many requests to Microsoft Defender ATP have been made. '
-            'Please, try again later.'
+            message
         )

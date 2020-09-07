@@ -67,17 +67,32 @@ def test_enrich_call_success(call_api, route, client, valid_jwt,
 
     for_target_response = {
         'osPlatform': 'Windows10',
+        'osProcessor': 'x64',
         'lastIpAddress': '172.17.230.209'
     }
 
+    networks_interface = {
+        'Results': [
+            {'MacAddress': '00224843C030',
+             'IPAddresses': '[{"IPAddress":"10.1.1.68","SubnetPrefix":26,'
+                            '"AddressType":"Private"},'
+                            '{"IPAddress":"fe80::6d25:8926:20c3:49ea",'
+                            '"SubnetPrefix":64,"AddressType":"Private"}] '
+             }
+        ]}
+
     exp_target_observables = [
         {'type': 'hostname', 'value': 'desktop-au3ip5k'},
-        {'type': 'ip', 'value': '172.17.230.209'}
+        {'type': 'mac_address', 'value': '00224843C030'},
+        {'type': 'ipv6', 'value': 'fe80::6d25:8926:20c3:49ea'}
     ]
 
     call_api.side_effect = [
         (RAW_RESPONSE_MOCK, None), (AH_RESPONSE, None),
         (for_target_response, None),
+        (networks_interface, None),
+        (GET_SHA256_FOR_0d549631690ea297c25b2a4e133cacb8a87b97c6, None),
+        (GET_SHA256_FOR_ecb05717e416d965255387f4edc196889aa12c67, None),
         (GET_SHA256_FOR_0d549631690ea297c25b2a4e133cacb8a87b97c6, None),
         (GET_SHA256_FOR_ecb05717e416d965255387f4edc196889aa12c67, None),
         (for_target_response, None)]
