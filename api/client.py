@@ -7,7 +7,8 @@ from .errors import (CTRInvalidCredentialsError,
                      CTRBadRequestError,
                      CTRUnexpectedResponseError,
                      CTRInternalServerError,
-                     CTRTooManyRequestsError)
+                     CTRTooManyRequestsError,
+                     CTRSSLError)
 
 
 class Client:
@@ -35,10 +36,13 @@ class Client:
         if not self.session.headers.get('Authorization'):
             self._auth()
 
-        if method == 'POST':
-            response = self.session.post(url, data=data)
-        else:
-            response = self.session.get(url)
+        try:
+            if method == 'POST':
+                response = self.session.post(url, data=data)
+            else:
+                response = self.session.get(url)
+        except requests.exceptions.SSLError as ex:
+            raise CTRSSLError(ex)
 
         if not response.ok:
             if response.status_code == HTTPStatus.UNAUTHORIZED:
