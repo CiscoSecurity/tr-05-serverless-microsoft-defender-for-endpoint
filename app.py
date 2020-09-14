@@ -32,9 +32,9 @@ def handle_error(exception):
 
 
 @app.errorhandler(CTRBaseError)
-def handle_tr_formatted_error(error):
+def handle_tr_formatted_error(exception):
     app.logger.error(exception)
-    return jsonify_errors(error.json)
+    return jsonify_errors(exception.json)
 
 
 if __name__ == '__main__':
