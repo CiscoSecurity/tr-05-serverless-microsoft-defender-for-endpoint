@@ -166,26 +166,6 @@ class Mapping:
         if md5:
             self._make_1level_hash('MD5', event, origin)
 
-        if any((sha1, sha256, md5)):
-            if event['FileOriginUrl']:
-                self.relations.append(self._add_relation(
-                    origin=origin,
-                    relation='Downloaded_From',
-                    source={'type': 'url',
-                            'value': event['FileOriginUrl']},
-                    related={'type': 'file_name',
-                             'value': event['FileName']}
-                ))
-            if event['FileOriginReferrerUrl']:
-                self.relations.append(self._add_relation(
-                    origin=origin,
-                    relation='Refers_To',
-                    source={'type': 'url',
-                            'value': event['FileOriginUrl']},
-                    related={'type': 'url',
-                             'value': event['FileOriginReferrerUrl']}
-                ))
-
         init_sha1, init_sha256, init_md5 = _get_hashes(
             event, prefix='InitiatingProcess')
         if init_sha1:
@@ -313,6 +293,25 @@ class Mapping:
                 related={'type': lower_th,
                          'value': event[type_hash]}
             ))
+
+        if event.get('FileOriginUrl'):
+            self.relations.append(self._add_relation(
+                origin=origin,
+                relation='Downloaded_From',
+                source={'type': 'url',
+                        'value': event['FileOriginUrl']},
+                related={'type': lower_th,
+                         'value': event[type_hash]}
+            ))
+            if event.get('FileOriginReferrerUrl'):
+                self.relations.append(self._add_relation(
+                    origin=origin,
+                    relation='Refers_To',
+                    source={'type': 'url',
+                            'value': event['FileOriginUrl']},
+                    related={'type': 'url',
+                             'value': event['FileOriginReferrerUrl']}
+                ))
 
     def _make_2level_hash(self, type_hash, event, origin):
         upper_th = type_hash.upper()
