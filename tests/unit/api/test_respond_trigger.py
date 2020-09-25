@@ -146,7 +146,8 @@ def test_respond_trigger_api_return_400(api_response, route,
         'errors': [
             {
                 'code': 'invalid request',
-                'message': 'Invalid request to Microsoft Defender ATP. It is a bad request',
+                'message': 'Invalid request to Microsoft Defender ATP. '
+                           'It is a bad request',
                 'type': 'fatal'
             }
         ]

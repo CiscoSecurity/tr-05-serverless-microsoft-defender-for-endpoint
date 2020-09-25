@@ -853,7 +853,8 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
         },
         {
             'categories': ['Defender ATP', 'Add Indicator'],
-            'description': 'Add indicator with Alert and Block action for asdf.com',
+            'description': 'Add indicator with Alert and Block action '
+                           'for asdf.com',
             'id': 'defender-add-indicator-alert-and-block',
             'query-params': {
                 'observable_type': 'domain',
