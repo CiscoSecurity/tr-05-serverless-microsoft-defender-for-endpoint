@@ -1,6 +1,9 @@
 import json
+from urllib.parse import urlparse
+
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
+
 from flask import request, current_app, jsonify, g
 
 
@@ -86,3 +89,11 @@ def group_observables(relay_input):
             result.append(obj)
 
     return result
+
+
+def is_url(value):
+    try:
+        result = urlparse(value)
+        return all((result.scheme, result.netloc))
+    except ValueError:
+        return False

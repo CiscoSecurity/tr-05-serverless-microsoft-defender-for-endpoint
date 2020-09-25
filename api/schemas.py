@@ -78,6 +78,8 @@ class ActionFormParamsSchema(Schema):
         validate=validate_string,
         required=True,
     )
+    query_params = fields.Dict()
+    indicator_id = fields.Integer(required=False)
 
     class Meta:
         unknown = INCLUDE

@@ -840,47 +840,38 @@ AH_RESPONSE = {
 }
 
 EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
-  "data": [
-    {
-      "categories": [
-        "Defender ATP",
-        "Submit Indicator"
-      ],
-      "description": "Submit indicator with alert action for DOMAIN",
-      "id": "defender-submit-indicator-alert",
-      "query-params": {
-        "observable_type": "domain",
-        "observable_value": "asdf.com"
-      },
-      "title": "Submit indicator with Alert"
-    },
-    {
-      "categories": [
-        "Defender ATP",
-        "Submit Indicator"
-      ],
-      "description": "Submit indicator with Alert and Block action for DOMAIN",
-      "id": "defender-submit-indicator-alert-and-block",
-      "query-params": {
-        "observable_type": "domain",
-        "observable_value": "asdf.com"
-      },
-      "title": "Submit indicator with Alert and Block"
-    },
-    {
-      "categories": [
-        "Defender ATP",
-        "Submit Indicator"
-      ],
-      "description": "Submit indicator with Allowed action for DOMAIN",
-      "id": "defender-submit-indicator-allowed",
-      "query-params": {
-        "observable_type": "domain",
-        "observable_value": "asdf.com"
-      },
-      "title": "Submit indicator with Allowed"
-    }
-  ]
+    'data': [
+        {
+            'categories': ['Defender ATP', 'Add Indicator'],
+            'description': 'Add indicator with Alert action for asdf.com',
+            'id': 'defender-add-indicator-alert',
+            'query-params': {
+                'observable_type': 'domain',
+                'observable_value': 'asdf.com'
+            },
+            'title': 'Add indicator: Alert'
+        },
+        {
+            'categories': ['Defender ATP', 'Add Indicator'],
+            'description': 'Add indicator with Alert and Block action for asdf.com',
+            'id': 'defender-add-indicator-alert-and-block',
+            'query-params': {
+                'observable_type': 'domain',
+                'observable_value': 'asdf.com'
+            },
+            'title': 'Add indicator: Alert and Block'
+        },
+        {
+            'categories': ['Defender ATP', 'Add Indicator'],
+            'description': 'Add indicator with Allowed action for asdf.com',
+            'id': 'defender-add-indicator-allowed',
+            'query-params': {
+                'observable_type': 'domain',
+                'observable_value': 'asdf.com'
+            },
+            'title': 'Add indicator: Allowed'
+        }
+    ]
 }
 
 RAW_RESPONSE_TRIGGER_OBSERVABLE = {

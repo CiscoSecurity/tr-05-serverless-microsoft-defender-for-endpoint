@@ -15,7 +15,7 @@ class Config:
     BASE_URL = f'{API_HOST}/api/{API_VERSION}'
     API_URL = BASE_URL + '/{entity}/{value}'
     ADVANCED_HUNTING_URL = f'{BASE_URL}/advancedqueries/run'
-    SUBMIT_INDICATOR_URL = f'{BASE_URL}/indicators'
+    INDICATOR_URL = f'{BASE_URL}/indicators'
 
     MD_ATP_OBSERVABLE_TYPES = (
         'sha1', 'sha256', 'ip', 'ipv6', 'domain'

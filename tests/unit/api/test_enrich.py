@@ -202,8 +202,8 @@ def test_enrich_call_429_error(set_headers, route, client,
     assert response.get_json() == EXPECTED_RESPONSE_429_ERROR
 
 
-@mock.patch('requests.Session')
-def test_enrich_call_wrong_observable(set_headers, route, client,
+@mock.patch('api.client.Client.call_api')
+def test_enrich_call_wrong_observable(call_api, route, client,
                                       valid_jwt):
 
     wrong_ip_json = [
@@ -213,25 +213,10 @@ def test_enrich_call_wrong_observable(set_headers, route, client,
         },
     ]
 
-    class Session:
-        headers = {'Authorization': 'ABC'}
-
-        def post(self, *args, **kwargs):
-            mock_response = mock.MagicMock()
-            mock_response.json.return_value = {'Results': []}
-            return mock_response
-
-        def get(self, *args, **kwargs):
-            mock_response = mock.MagicMock()
-            mock_response.ok = False
-            mock_response.status_code = HTTPStatus.NOT_FOUND
-            return mock_response
-
-        @staticmethod
-        def close():
-            pass
-
-    set_headers.return_value = Session
+    call_api.side_effect = (
+        (None, HTTPStatus.NOT_FOUND),
+        ({'Results': []}, None)
+    )
 
     response = client.post(
         route, headers=headers(valid_jwt), json=wrong_ip_json
