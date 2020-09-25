@@ -29,7 +29,7 @@ class Client:
             url = url + path
         return url
 
-    def call_api(self, url, method='GET', data=None):
+    def call_api(self, url, method='GET', params=None, data=None):
         error = None
         result = None
 
@@ -38,24 +38,27 @@ class Client:
 
         try:
             if method == 'POST':
-                response = self.session.post(url, data=data)
+                response = self.session.post(url, params=params, data=data)
+            elif method == 'DELETE':
+                response = self.session.delete(url)
             else:
-                response = self.session.get(url)
+                response = self.session.get(url, params=params)
         except requests.exceptions.SSLError as ex:
             raise CTRSSLError(ex)
 
-        if not response.ok:
+        if response.ok:
+            if response.status_code == HTTPStatus.OK:
+                result = response.json()
+        else:
             if response.status_code == HTTPStatus.UNAUTHORIZED:
                 self._auth()
-                self.call_api(method, data)
+                self.call_api(url, method, params, data)
             elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
                 raise CTRTooManyRequestsError(response)
             elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
                 raise CTRInternalServerError
             else:
                 error = str(response.json()['error'])
-        else:
-            result = response.json()
         return result, error
 
     def _set_headers(self, response):

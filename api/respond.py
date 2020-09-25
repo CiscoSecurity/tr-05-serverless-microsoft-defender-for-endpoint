@@ -28,44 +28,76 @@ def respond_observables():
         return jsonify_data([])
 
     g.actions = []
+
     for observable in observables:
+        params = "$filter=indicatorValue+eq+'{value}'&$top=1".format(
+            value=observable['value']).encode('utf-8')
+
+        credentials = get_jwt()
+        client = Client(credentials)
+        client.open_session()
+        response, error = client.call_api(current_app.config['INDICATOR_URL'],
+                                          params=params)
+
         query_params = {'observable_type': observable['type'],
                         'observable_value': observable['value']}
-        actions = [
-            {
-                'id': 'defender-submit-indicator-alert',
-                'title': 'Submit indicator with Alert',
-                'description': f'Submit indicator with alert action '
-                               f'for {observable["type"].upper()}',
-                'categories': [
-                    'Defender ATP',
-                    'Submit Indicator'
-                ],
-                'query-params': query_params
-            },
-            {
-                'id': 'defender-submit-indicator-alert-and-block',
-                'title': 'Submit indicator with Alert and Block',
-                'description': f'Submit indicator with Alert and Block action '
-                               f'for {observable["type"].upper()}',
-                'categories': [
-                    'Defender ATP',
-                    'Submit Indicator'
-                ],
-                'query-params': query_params
-            },
-            {
-                'id': 'defender-submit-indicator-allowed',
-                'title': 'Submit indicator with Allowed',
-                'description': f'Submit indicator with Allowed action '
-                               f'for {observable["type"].upper()}',
-                'categories': [
-                    'Defender ATP',
-                    'Submit Indicator'
-                ],
-                'query-params': query_params
-            }
-        ]
+
+        if response and response.get('value'):
+            obj = response['value'][0]
+            human_action = 'Alert and Block' \
+                if obj['action'] == 'AlertAndBlock' else obj['action']
+            query_params['indicator_id'] = obj['id']
+            actions = [
+                {
+                    'id': 'defender-remove-indicator',
+                    'title': 'Remove indicator: {action}'.format(
+                        action=human_action),
+                    'description': f'Remove indicator with {human_action} '
+                                   f'action for {observable["value"]}',
+                    'categories': [
+                        'Defender ATP',
+                        'Remove Indicator'
+                    ],
+                    'query-params': query_params
+                },
+            ]
+
+        else:
+            actions = [
+                {
+                    'id': 'defender-add-indicator-alert',
+                    'title': 'Add indicator: Alert',
+                    'description': f'Add indicator with Alert action '
+                                   f'for {observable["value"]}',
+                    'categories': [
+                        'Defender ATP',
+                        'Add Indicator'
+                    ],
+                    'query-params': query_params
+                },
+                {
+                    'id': 'defender-add-indicator-alert-and-block',
+                    'title': 'Add indicator: Alert and Block',
+                    'description': f'Add indicator with Alert and Block action'
+                                   f' for {observable["value"]}',
+                    'categories': [
+                        'Defender ATP',
+                        'Add Indicator'
+                    ],
+                    'query-params': query_params
+                },
+                {
+                    'id': 'defender-add-indicator-allowed',
+                    'title': 'Add indicator: Allowed',
+                    'description': f'Add indicator with Allowed action '
+                                   f'for {observable["value"]}',
+                    'categories': [
+                        'Defender ATP',
+                        'Add Indicator'
+                    ],
+                    'query-params': query_params
+                }
+            ]
         g.actions.extend(actions)
     return jsonify_data(g.actions)
 
@@ -89,8 +121,9 @@ def respond_trigger():
                   'by the UI or API response actions'
 
     actions = {
-        'defender-submit-indicator-alert': {
-            'url': current_app.config['SUBMIT_INDICATOR_URL'],
+        'defender-add-indicator-alert': {
+            'url': current_app.config['INDICATOR_URL'],
+            'method': 'POST',
             'data': {
                 'indicatorValue': data['observable_value'],
                 'indicatorType': mapping_by_type[data['observable_type']],
@@ -100,8 +133,9 @@ def respond_trigger():
                 'severity': 'High'
             }
         },
-        'defender-submit-indicator-alert-and-block': {
-            'url': current_app.config['SUBMIT_INDICATOR_URL'],
+        'defender-add-indicator-alert-and-block': {
+            'url': current_app.config['INDICATOR_URL'],
+            'method': 'POST',
             'data': {
                 'indicatorValue': data['observable_value'],
                 'indicatorType': mapping_by_type[data['observable_type']],
@@ -111,8 +145,9 @@ def respond_trigger():
                 'severity': 'High'
             }
         },
-        'defender-submit-indicator-allowed': {
-            'url': current_app.config['SUBMIT_INDICATOR_URL'],
+        'defender-add-indicator-allowed': {
+            'url': current_app.config['INDICATOR_URL'],
+            'method': 'POST',
             'data': {
                 'indicatorValue': data['observable_value'],
                 'indicatorType': mapping_by_type[data['observable_type']],
@@ -120,6 +155,12 @@ def respond_trigger():
                 'title': title,
                 'description': description
             }
+        },
+        'defender-remove-indicator': {
+            'url': current_app.config['INDICATOR_URL'] + '/' + str(
+                data.get('indicator_id', '')),
+            'method': 'DELETE',
+            'data': {}
         }
     }
 
@@ -131,15 +172,18 @@ def respond_trigger():
         result['errors'] = [CTRBadRequestError("Unsupported action.").json, ]
         return jsonify(result)
 
-    action = json.dumps(item['data']).encode('utf-8')
+    if item['data']:
+        action = json.dumps(item['data']).encode('utf-8')
+    else:
+        action = None
     credentials = get_jwt()
     client = Client(credentials)
     client.open_session()
-    response, error = client.call_api(item['url'], 'POST', data=action)
+    response, error = client.call_api(item['url'], item['method'], data=action)
     client.close_session()
 
     if error is not None:
         result['data']['status'] = 'failure'
-        result['errors'] = [CTRBadRequestError().json, ]
+        result['errors'] = [CTRBadRequestError(error).json, ]
 
     return jsonify(result)

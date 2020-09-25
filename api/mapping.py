@@ -4,6 +4,8 @@ from functools import lru_cache
 
 from flask import current_app
 
+from api.utils import is_url
+
 
 SEVERITY = {
         'Informational': 'Info',
@@ -20,11 +22,10 @@ CTIM_SCHEMA_VERSION = {
 
 
 class Mapping:
-    def __init__(self, client, observable, count, entity):
+    def __init__(self, client, observable, count):
         self.client = client
         self.observable = observable
         self.count = count
-        self.entity = entity
         self.source = 'Microsoft Defender ATP'
         self.default_sighting = {
                 'type': 'sighting',
@@ -36,6 +37,10 @@ class Mapping:
             }
         self.relations = []
         self._adv_hunting_url = current_app.config['ADVANCED_HUNTING_URL']
+
+    @staticmethod
+    def _observable_type4url(url):
+        return 'url' if is_url(url) else 'domain'
 
     @lru_cache(maxsize=512)
     def _call_hashes(self, value):
@@ -69,7 +74,7 @@ class Mapping:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Resolved_To',
-                source={'type': 'domain',
+                source={'type': self._observable_type4url(event['RemoteUrl']),
                         'value': event['RemoteUrl']},
                 related={'type': 'ip',
                          'value': event['RemoteIP']}
@@ -94,8 +99,10 @@ class Mapping:
                         'type': hash_type,
                         'value': event[f'InitiatingProcess{hash_type.upper()}']
                     },
-                    related={'type': 'domain',
-                             'value': event['RemoteUrl']}
+                    related={
+                        'type': self._observable_type4url(event['RemoteUrl']),
+                        'value': event['RemoteUrl']
+                    }
                 ))
 
             if event['RemoteIP']:
@@ -325,21 +332,23 @@ class Mapping:
                 related={'type': lower_th,
                          'value': event[f'InitiatingProcess{upper_th}']}
             ))
+
+            if event['InitiatingProcessParentFileName']:
+                self.relations.append(self._add_relation(
+                    origin=origin,
+                    relation='Parent_Of',
+                    source={'type': 'file_name',
+                            'value': event['InitiatingProcessParentFileName']},
+                    related={'type': 'file_name',
+                             'value': event['InitiatingProcessFileName']}
+                ))
+
         if event['InitiatingProcessFolderPath']:
             self.relations.append(self._add_relation(
                 origin=origin,
                 relation='File_Path_Of',
                 source={'type': 'file_path',
                         'value': event['InitiatingProcessFolderPath']},
-                related={'type': lower_th,
-                         'value': event[f'InitiatingProcess{upper_th}']}
-            ))
-        if event['InitiatingProcessParentFileName']:
-            self.relations.append(self._add_relation(
-                origin=origin,
-                relation='Child_Of',
-                source={'type': 'file_name',
-                        'value': event['InitiatingProcessParentFileName']},
                 related={'type': lower_th,
                          'value': event[f'InitiatingProcess{upper_th}']}
             ))
@@ -391,7 +400,7 @@ class Mapping:
         query = json.dumps({'Query': query}).encode('utf-8')
         response, error = self.client.call_api(
             self._adv_hunting_url,
-            'POST', query)
+            'POST', data=query)
 
         if response and response.get('Results'):
             for item in response['Results']:
@@ -450,10 +459,6 @@ class Mapping:
                 observables.append(
                     {'type': 'ip', 'value': ips_info['IPAddress']}
                 )
-
-        # networks = self._get_network_info(event['DeviceId'])
-        # if networks:
-        #     observables.extend(networks)
 
         return {
             'type': 'endpoint',
@@ -520,6 +525,7 @@ class Mapping:
         md5 = None
         ip = None
         url = None
+        url_type = None
 
         for evidence in alert['evidence']:
             if evidence.get('entityType') in ('Process', 'File'):
@@ -618,16 +624,18 @@ class Mapping:
 
             if evidence.get('entityType') == 'Url':
                 url = evidence.get('url')
+                url_type = self._observable_type4url(url)
 
             def _make_relations_with_hash(hash_type, hash_value,
-                                          ip_address, url_address):
+                                          ip_address, url_address,
+                                          url_type=None):
                 if url_address:
                     self.relations.append(self._add_relation(
                         origin=alert['detectionSource'],
                         relation='Connect_To',
                         source={'type': hash_type,
                                 'value': hash_value},
-                        related={'type': 'domain',
+                        related={'type': url_type,
                                  'value': url_address}
                     ))
 
@@ -645,18 +653,21 @@ class Mapping:
                 self.relations.append(self._add_relation(
                     origin=alert['detectionSource'],
                     relation='Resolved_To',
-                    source={'type': 'domain',
+                    source={'type': url_type,
                             'value': url},
                     related={'type': 'ip',
                              'value': ip}
                 ))
 
             if sha1:
-                _make_relations_with_hash('sha1', sha1, ip, url)
+                _make_relations_with_hash('sha1', sha1, ip,
+                                          url, url_type)
             if sha256:
-                _make_relations_with_hash('sha256', sha256, ip, url)
+                _make_relations_with_hash('sha256', sha256, ip,
+                                          url, url_type)
             if md5:
-                _make_relations_with_hash('md5', md5, ip, url)
+                _make_relations_with_hash('md5', md5, ip,
+                                          url, url_type)
 
         sighting['targets'] = targets
         sighting['relations'] = self.relations
@@ -672,11 +683,8 @@ class Mapping:
         sighting['description'] = alert['description']
         sighting['severity'] = SEVERITY.get(alert['severity'], None)
         sighting['timestamp'] = alert['lastUpdateTime']
-        sighting['source_uri'] = 'https://securitycenter.windows.com/' \
-                                 '{entity}/' \
-                                 '{o_value}/' \
-                                 'alerts'.format(entity=self.entity,
-                                                 o_value=self.observable[
-                                                     'value'])
+        sighting['source_uri'] = \
+            'https://securitycenter.windows.com/alerts' \
+            '/{alert_id}/details'.format(alert_id=alert['id'])
 
         return sighting
