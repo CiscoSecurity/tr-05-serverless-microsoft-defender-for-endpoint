@@ -686,11 +686,5 @@ class Mapping:
         sighting['source_uri'] = \
             'https://securitycenter.windows.com/alerts' \
             '/{alert_id}/details'.format(alert_id=alert['id'])
-        # sighting['source_uri'] = 'https://securitycenter.windows.com/' \
-        #                          '{entity}/' \
-        #                          '{o_value}/' \
-        #                          'alerts'.format(entity=self.entity,
-        #                                          o_value=self.observable[
-        #                                              'value'])
 
         return sighting

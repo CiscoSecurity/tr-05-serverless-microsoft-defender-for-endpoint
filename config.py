@@ -18,7 +18,7 @@ class Config:
     INDICATOR_URL = f'{BASE_URL}/indicators'
 
     MD_ATP_OBSERVABLE_TYPES = (
-        'sha1', 'sha256', 'ip', 'ipv6', 'domain'
+        'sha1', 'sha256', 'ip', 'domain'
     )
 
     CTIM_SCHEMA_VERSION = '1.0.16'
