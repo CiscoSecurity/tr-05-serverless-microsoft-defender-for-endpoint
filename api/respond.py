@@ -50,8 +50,10 @@ def respond_observables():
             actions = [
                 {
                     'id': 'defender-remove-indicator',
-                    'title': 'Remove indicator: {action}'.format(
-                        action=human_action),
+                    'title': 'Remove indicator: {action} - {title}'.format(
+                        action=human_action,
+                        title=obj['title']
+                    ),
                     'description': f'Remove indicator with {human_action} '
                                    f'action for {observable["value"]}',
                     'categories': [
