@@ -274,6 +274,17 @@ class Mapping:
                          'value': init_md5}
             ))
 
+        if event['ActionType'] == 'FileRenamed':
+            if event.get('PreviousFileName'):
+                self.relations.append(self._add_relation(
+                    origin=origin,
+                    relation='Renamed_To',
+                    source={'type': 'file_name',
+                            'value': event['PreviousFileName']},
+                    related={'type': 'file_name',
+                             'value': event['FileName']}
+                ))
+
     def _make_1level_hash(self, type_hash, event, origin):
         lower_th = type_hash.lower()
 
