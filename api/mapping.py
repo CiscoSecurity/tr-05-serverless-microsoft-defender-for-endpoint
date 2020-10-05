@@ -350,8 +350,8 @@ class Mapping:
                     relation='Parent_Of',
                     source={'type': 'file_name',
                             'value': event['InitiatingProcessParentFileName']},
-                    related={'type': 'file_name',
-                             'value': event['InitiatingProcessFileName']}
+                    related={'type': lower_th,
+                             'value': event[f'InitiatingProcess{upper_th}']}
                 ))
 
         if event['InitiatingProcessFolderPath']:

@@ -82,7 +82,7 @@ def group_observables(relay_input):
         o_type = observable['type'].lower()
 
         # Get only supported types.
-        if o_type in current_app.config['MD_ATP_OBSERVABLE_TYPES']:
+        if o_type in current_app.config['MD_ATP_OBSERVABLE_TYPES'].keys():
             obj = {'type': o_type, 'value': o_value}
             if obj in result:
                 continue

@@ -33,7 +33,7 @@ def get_alert(client, observable):
         url = client.format_url('domains', observable['value'], '/alerts')
         response = client.call_api(url)[0]
 
-    elif observable['type'] == 'ip':
+    elif observable['type'] in ('ip', 'ipv6'):
         url = client.format_url('ips', observable['value'], '/alerts')
         response = client.call_api(url)[0]
 
@@ -44,45 +44,29 @@ def get_alert(client, observable):
 
 
 def call_advanced_hunting(client, o_value, o_type, limit):
-
-    queries = {
-        'sha1': "DeviceFileEvents "
-                "| where SHA1 == '{o_value}' "
-                "| join kind=leftouter (DeviceNetworkInfo "
-                "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
-                "by DeviceId, NetworkAdapterType, MacAddress, "
-                "DeviceName, IPAddresses) on DeviceId"
-                "| limit {limit}",
-        'sha256': "DeviceFileEvents "
-                  "| where SHA256 == '{o_value}' "
-                  "| join kind=leftouter (DeviceNetworkInfo "
-                  "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
-                  "by DeviceId, NetworkAdapterType, MacAddress, "
-                  "DeviceName, IPAddresses) on DeviceId"
-                  "| limit {limit}",
-        'md5': "DeviceFileEvents "
-               "| where MD5 == '{o_value}' "
-               "| join kind=leftouter (DeviceNetworkInfo "
-               "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
-               "by DeviceId, NetworkAdapterType, MacAddress, "
-               "DeviceName, IPAddresses) on DeviceId"
-               "| limit {limit}",
-        'ip': "DeviceNetworkEvents "
-              "| where RemoteIP == '{o_value}' "
-              "| join kind=leftouter (DeviceNetworkInfo "
-              "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
-              "by DeviceId, NetworkAdapterType, MacAddress, "
-              "DeviceName, IPAddresses) on DeviceId"
-              "| limit {limit}",
-        'domain': "DeviceNetworkEvents "
-                  "| where RemoteUrl == '{o_value}' "
-                  "| join kind=leftouter (DeviceNetworkInfo "
-                  "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) "
-                  "by DeviceId, NetworkAdapterType, MacAddress, "
-                  "DeviceName, IPAddresses) on DeviceId"
-                  "| limit {limit}"
+    name_fields = {
+        'sha1': 'SHA1',
+        'sha256': 'SHA256',
+        'domain': 'RemoteUrl',
+        'ip': 'RemoteIP',
+        'ipv6': 'RemoteIP'
     }
-    query = queries[o_type].format(o_value=o_value, limit=limit)
+
+    if o_type in ('sha1', 'sha256'):
+        query = "DeviceFileEvents " \
+                f"| where {name_fields[o_type]} == '{o_value}' " \
+                "| join kind=leftouter (DeviceNetworkInfo " \
+                "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) " \
+                "by DeviceId, NetworkAdapterType, MacAddress, " \
+                f"DeviceName, IPAddresses) on DeviceId | limit {limit}"
+    else:
+        query = "DeviceNetworkEvents " \
+                f"| where {name_fields[o_type]} == '{o_value}' " \
+                "| join kind=leftouter (DeviceNetworkInfo " \
+                "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) " \
+                "by DeviceId, NetworkAdapterType, MacAddress, " \
+                f"DeviceName, IPAddresses) on DeviceId | limit {limit}"
+
     query = json.dumps({'Query': query}).encode('utf-8')
     result, error = client.call_api(
         current_app.config['ADVANCED_HUNTING_URL'],
@@ -173,5 +157,44 @@ def observe_observables():
 
 @enrich_api.route('/refer/observables', methods=['POST'])
 def refer_observables():
-    # Not supported or implemented
-    return jsonify_data([])
+    observables, error = get_observables()
+
+    if error:
+        return jsonify_errors(error)
+
+    data = []
+
+    for observable in observables:
+        o_type = observable['type']
+        o_value = observable['value']
+
+        if o_type in ('sha1', 'sha256'):
+            entity = 'files'
+        elif o_type in ('ip', 'ipv6'):
+            entity = 'ips'
+        else:
+            entity = 'urls'
+
+        title = 'Search for this {o_type}'.format(
+            o_type=current_app.config["MD_ATP_OBSERVABLE_TYPES"][o_type]
+        )
+        description = 'Lookup this {o_type} on Microsoft Defender ATP'.format(
+            o_type=current_app.config['MD_ATP_OBSERVABLE_TYPES'][o_type]
+        )
+        url = '{host}/{entity}/{o_value}'.format(
+            host=current_app.config['SECURITY_CENTER_URL'],
+            entity=entity,
+            o_value=o_value
+        )
+
+        data.append(
+            {
+                'id': f'ref-mdatp-search-{o_type}-{o_value}',
+                'title': title,
+                'description': description,
+                'url': url,
+                'categories': ['Search', 'Microsoft Defender ATP']
+            }
+        )
+
+    return jsonify_data(data)

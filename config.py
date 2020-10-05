@@ -16,10 +16,19 @@ class Config:
     API_URL = BASE_URL + '/{entity}/{value}'
     ADVANCED_HUNTING_URL = f'{BASE_URL}/advancedqueries/run'
     INDICATOR_URL = f'{BASE_URL}/indicators'
+    SECURITY_CENTER_URL = 'https://securitycenter.windows.com'
 
-    MD_ATP_OBSERVABLE_TYPES = (
-        'sha1', 'sha256', 'ip', 'domain'
-    )
+    # MD_ATP_OBSERVABLE_TYPES = (
+    #     'sha1', 'sha256', 'ip', 'domain'
+    # )
+
+    MD_ATP_OBSERVABLE_TYPES = {
+        'sha1': 'SHA1',
+        'sha256': 'SHA256',
+        'ip': 'IP',
+        'ipv6': 'IPV6',
+        'domain': 'Domain'
+    }
 
     CTIM_SCHEMA_VERSION = '1.0.16'
 
