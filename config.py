@@ -18,10 +18,6 @@ class Config:
     INDICATOR_URL = f'{BASE_URL}/indicators'
     SECURITY_CENTER_URL = 'https://securitycenter.windows.com'
 
-    # MD_ATP_OBSERVABLE_TYPES = (
-    #     'sha1', 'sha256', 'ip', 'domain'
-    # )
-
     MD_ATP_OBSERVABLE_TYPES = {
         'sha1': 'SHA1',
         'sha256': 'SHA256',
