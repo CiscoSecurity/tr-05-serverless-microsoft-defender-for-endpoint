@@ -257,6 +257,12 @@ header set to `Bearer <JWT>`.
   - Triggers an action at the underlying external service.
   - Returns an action result.
 
+- `POST /refer/observables`
+  - Accepts a list of observables and filters out unsupported ones.
+  - Builds a search link per each supported observable to pivot back to the
+  underlying external service and look up the observable there.
+  - Returns a list of those links.
+
 ### Supported Types of Observables
 
 - `ip`
