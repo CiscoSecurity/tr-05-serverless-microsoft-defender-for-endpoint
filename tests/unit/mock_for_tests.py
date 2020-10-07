@@ -466,13 +466,34 @@ EXPECTED_RESPONSE = {
 }
 
 
-EXPECTED_RESPONSE_AUTH_ERROR = {
-    "errors": [
+# EXPECTED_RESPONSE_AUTH_ERROR = {
+#     "errors": [
+#         {
+#             "code": "permission denied",
+#             "message": "Invalid Authorization Bearer JWT.",
+#             "type": "fatal"
+#         }
+#     ]
+# }
+
+EXPECTED_RESPONSE_BAD_SIGNATURE = {
+    'errors': [
         {
-            "code": "permission denied",
-            "message": "Invalid Authorization Bearer JWT.",
-            "type": "fatal"
+            'code': 'authorization error',
+            'message': 'Authorization failed: '
+                       'Failed to decode JWT with provided key',
+            'type': 'fatal'
         }
+    ]
+}
+
+
+EXPECTED_RESPONSE_AUTH_ERROR = {
+    'errors': [
+        {'code': 'authorization error',
+         'message': 'Authorization failed: Auth Boom.',
+         'type': 'fatal'
+         }
     ]
 }
 
