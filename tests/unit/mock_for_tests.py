@@ -864,13 +864,13 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
         },
         {
             'categories': ['Defender ATP', 'Add Indicator'],
-            'description': 'Add indicator with Allowed action for asdf.com',
+            'description': 'Add indicator with Allow action for asdf.com',
             'id': 'defender-add-indicator-allowed',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
             },
-            'title': 'Add indicator: Allowed'
+            'title': 'Add indicator: Allow'
         }
     ]
 }
