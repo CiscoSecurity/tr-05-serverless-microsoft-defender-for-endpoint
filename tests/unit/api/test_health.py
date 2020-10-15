@@ -5,6 +5,8 @@ from unittest import mock
 
 from .utils import headers
 from tests.unit.mock_for_tests import (EXPECTED_RESPONSE_BAD_SIGNATURE,
+                                       EXPECTED_RESPONSE_MISS_AUTH_ERROR,
+                                       EXPECTED_RESPONSE_WRONG_AUTH_TYPE_ERROR,
                                        EXPECTED_RESPONSE_400_ERROR)
 
 
@@ -40,3 +42,18 @@ def test_health_call_with_without_token_failure(session, route,
 def test_health_call_success(route, client, valid_jwt):
     response = client.post(route, headers=headers(valid_jwt))
     assert response.status_code == HTTPStatus.OK
+
+
+def test_jwt_miss_auth_header(route, client):
+    response = client.post(route, headers={'Not_Authorization': {}})
+    assert response.status_code == HTTPStatus.OK
+    assert response.get_json() == EXPECTED_RESPONSE_MISS_AUTH_ERROR
+
+
+def test_jwt_wrong_auth_type(route, client, valid_jwt):
+    response = client.post(
+        route,
+        headers={'Authorization': f'Not_Bearer {valid_jwt}'}
+    )
+    assert response.status_code == HTTPStatus.OK
+    assert response.get_json() == EXPECTED_RESPONSE_WRONG_AUTH_TYPE_ERROR

@@ -79,13 +79,13 @@ class Client:
 
         body = {
             'resource': current_app.config['API_HOST'],
-            'client_id': self.credentials.get('client_id', ''),
-            'client_secret': self.credentials.get('client_secret', ''),
+            'client_id': self.credentials['client_id'],
+            'client_secret': self.credentials['client_secret'],
             'grant_type': 'client_credentials'
         }
 
         url = current_app.config['AUTH_URL'].format(
-            tenant_id=self.credentials.get('tenant_id', '')
+            tenant_id=self.credentials['tenant_id']
         )
         response = self.session.get(
             url,

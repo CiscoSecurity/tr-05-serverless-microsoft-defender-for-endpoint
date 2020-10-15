@@ -466,16 +466,6 @@ EXPECTED_RESPONSE = {
 }
 
 
-# EXPECTED_RESPONSE_AUTH_ERROR = {
-#     "errors": [
-#         {
-#             "code": "permission denied",
-#             "message": "Invalid Authorization Bearer JWT.",
-#             "type": "fatal"
-#         }
-#     ]
-# }
-
 EXPECTED_RESPONSE_BAD_SIGNATURE = {
     'errors': [
         {
@@ -492,6 +482,24 @@ EXPECTED_RESPONSE_AUTH_ERROR = {
     'errors': [
         {'code': 'authorization error',
          'message': 'Authorization failed: Auth Boom.',
+         'type': 'fatal'
+         }
+    ]
+}
+
+EXPECTED_RESPONSE_MISS_AUTH_ERROR = {
+    'errors': [
+        {'code': 'authorization error',
+         'message': 'Authorization failed: Authorization header is missing',
+         'type': 'fatal'
+         }
+    ]
+}
+
+EXPECTED_RESPONSE_WRONG_AUTH_TYPE_ERROR = {
+    'errors': [
+        {'code': 'authorization error',
+         'message': 'Authorization failed: Wrong authorization type',
          'type': 'fatal'
          }
     ]

@@ -41,7 +41,13 @@ def get_jwt():
     token = get_auth_token()
 
     try:
-        return jwt.decode(token, current_app.config['SECRET_KEY'])
+        credentials = jwt.decode(token, current_app.config['SECRET_KEY'])
+        client_id = credentials['client_id']
+        client_secret = credentials['client_secret']
+        tenant_id = credentials['tenant_id']
+        return {'client_id': client_id,
+                'client_secret': client_secret,
+                'tenant_id': tenant_id}
     except tuple(expected_errors) as error:
         message = expected_errors[error.__class__]
         raise AuthorizationError(message)
