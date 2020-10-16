@@ -50,8 +50,7 @@ class Client:
                 result = response.json()
         else:
             if response.status_code == HTTPStatus.UNAUTHORIZED:
-                self._auth()
-                self.call_api(url, method, params, data)
+                raise AuthorizationError(str(response.json()['error']))
             elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
                 raise CTRTooManyRequestsError(response)
             elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:

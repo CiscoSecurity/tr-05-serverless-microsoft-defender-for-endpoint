@@ -162,6 +162,8 @@ def refer_observables():
     if error:
         return jsonify_errors(error)
 
+    observables = group_observables(observables)
+
     data = []
 
     for observable in observables:
@@ -172,8 +174,10 @@ def refer_observables():
             entity = 'files'
         elif o_type in ('ip', 'ipv6'):
             entity = 'ips'
-        else:
+        elif o_type == 'domain':
             entity = 'urls'
+        else:
+            continue
 
         title = 'Search for this {o_type}'.format(
             o_type=current_app.config["MD_ATP_OBSERVABLE_TYPES"][o_type]

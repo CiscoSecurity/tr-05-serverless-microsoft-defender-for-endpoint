@@ -90,8 +90,8 @@ def respond_observables():
                 },
                 {
                     'id': 'defender-add-indicator-allowed',
-                    'title': 'Add indicator: Allowed',
-                    'description': f'Add indicator with Allowed action '
+                    'title': 'Add indicator: Allow',
+                    'description': f'Add indicator with Allow action '
                                    f'for {observable["value"]}',
                     'categories': [
                         'Defender ATP',
