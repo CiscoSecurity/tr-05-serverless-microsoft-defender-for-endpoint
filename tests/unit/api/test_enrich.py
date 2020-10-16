@@ -5,7 +5,6 @@ from unittest import mock
 
 from .utils import headers
 from tests.unit.mock_for_tests import (
-    EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR,
     EXPECTED_RESPONSE_500_ERROR,
     EXPECTED_RESPONSE_429_ERROR,
     RAW_RESPONSE_MOCK,
@@ -124,10 +123,7 @@ def test_enrich_call_invalid_auth_401_error(responses, route, client,
     res.ok = False
     res.status_code = HTTPStatus.UNAUTHORIZED
 
-    responses.side_effect = (
-        mock.MagicMock(),
-        res
-    )
+    responses.return_value = res
 
     response = client.post(
         route, headers=headers(valid_jwt), json=valid_json
@@ -151,7 +147,7 @@ def test_enrich_call_invalid_auth_400_error(get_token, route, client,
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.get_json() == EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR
+    assert response.get_json()['errors'][0]['code'] == 'authorization error'
 
 
 @mock.patch('requests.Session')

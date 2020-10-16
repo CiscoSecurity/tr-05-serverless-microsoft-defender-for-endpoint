@@ -2,8 +2,7 @@ import requests
 from flask import current_app
 from http import HTTPStatus
 
-from .errors import (CTRInvalidCredentialsError,
-                     CTRInvalidJWTError,
+from .errors import (CTRInvalidJWTError,
                      CTRBadRequestError,
                      CTRUnexpectedResponseError,
                      CTRInternalServerError,
@@ -51,7 +50,8 @@ class Client:
                 result = response.json()
         else:
             if response.status_code == HTTPStatus.UNAUTHORIZED:
-                raise AuthorizationError(str(response.json()['error']))
+                self._auth()
+                self.call_api(url, method, params, data)
             elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
                 raise CTRTooManyRequestsError(response)
             elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
@@ -98,7 +98,12 @@ class Client:
 
         elif response.status_code in (HTTPStatus.UNAUTHORIZED,
                                       HTTPStatus.BAD_REQUEST):
-            raise CTRInvalidCredentialsError()
+            raise AuthorizationError(
+                str(response.json().get(
+                    'error_description',
+                    'on Microsoft Defender ATP side'
+                ))
+            )
         elif response.status_code == HTTPStatus.NOT_FOUND:
             raise CTRInvalidJWTError()
         raise CTRUnexpectedResponseError(response.json())

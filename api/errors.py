@@ -20,14 +20,6 @@ class CTRBaseError(Exception):
                 'message': self.message}
 
 
-class CTRInvalidCredentialsError(CTRBaseError):
-    def __init__(self):
-        super().__init__(
-            PERMISSION_DENIED,
-            'The request is missing valid credentials.'
-        )
-
-
 class CTRInvalidJWTError(CTRBaseError):
     def __init__(self):
         super().__init__(
