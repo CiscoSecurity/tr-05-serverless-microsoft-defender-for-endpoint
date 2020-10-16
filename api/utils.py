@@ -2,27 +2,55 @@ import json
 from urllib.parse import urlparse
 
 from authlib.jose import jwt
-from authlib.jose.errors import JoseError
+from authlib.jose.errors import BadSignatureError, DecodeError
 
 from flask import request, current_app, jsonify, g
 
+from api.errors import AuthorizationError
 
-def get_jwt():
+
+def get_auth_token():
     """
     Parse the incoming request's Authorization Bearer JWT for some credentials.
-    Validate its signature against the application's secret key.
-
-    Note. This function is just an example of how one can read and check
-    anything before passing to an API endpoint, and thus it may be modified in
-    any way, replaced by another function, or even removed from the module.
     """
+    expected_errors = {
+        KeyError: 'Authorization header is missing',
+        AssertionError: 'Wrong authorization type'
+    }
 
     try:
         scheme, token = request.headers['Authorization'].split()
         assert scheme.lower() == 'bearer'
-        return jwt.decode(token, current_app.config['SECRET_KEY'])
-    except (KeyError, ValueError, AssertionError, JoseError):
-        return {}
+        return token
+    except tuple(expected_errors) as error:
+        raise AuthorizationError(expected_errors[error.__class__])
+
+
+def get_jwt():
+    """
+    Get Authorization token
+    and validate its signature against the application's secret key.
+    """
+    expected_errors = {
+        KeyError: 'Wrong JWT payload structure',
+        TypeError: '<SECRET_KEY> is missing',
+        BadSignatureError: 'Failed to decode JWT with provided key',
+        DecodeError: 'Wrong JWT structure'
+    }
+
+    token = get_auth_token()
+
+    try:
+        credentials = jwt.decode(token, current_app.config['SECRET_KEY'])
+        client_id = credentials['client_id']
+        client_secret = credentials['client_secret']
+        tenant_id = credentials['tenant_id']
+        return {'client_id': client_id,
+                'client_secret': client_secret,
+                'tenant_id': tenant_id}
+    except tuple(expected_errors) as error:
+        message = expected_errors[error.__class__]
+        raise AuthorizationError(message)
 
 
 def get_json(schema):

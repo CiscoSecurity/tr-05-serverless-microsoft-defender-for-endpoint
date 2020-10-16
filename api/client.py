@@ -8,7 +8,7 @@ from .errors import (CTRInvalidCredentialsError,
                      CTRUnexpectedResponseError,
                      CTRInternalServerError,
                      CTRTooManyRequestsError,
-                     CTRSSLError)
+                     CTRSSLError, AuthorizationError)
 
 
 class Client:
@@ -51,8 +51,7 @@ class Client:
                 result = response.json()
         else:
             if response.status_code == HTTPStatus.UNAUTHORIZED:
-                self._auth()
-                self.call_api(url, method, params, data)
+                raise AuthorizationError(str(response.json()['error']))
             elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
                 raise CTRTooManyRequestsError(response)
             elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
@@ -80,13 +79,13 @@ class Client:
 
         body = {
             'resource': current_app.config['API_HOST'],
-            'client_id': self.credentials.get('client_id', ''),
-            'client_secret': self.credentials.get('client_secret', ''),
+            'client_id': self.credentials['client_id'],
+            'client_secret': self.credentials['client_secret'],
             'grant_type': 'client_credentials'
         }
 
         url = current_app.config['AUTH_URL'].format(
-            tenant_id=self.credentials.get('tenant_id', '')
+            tenant_id=self.credentials['tenant_id']
         )
         response = self.session.get(
             url,

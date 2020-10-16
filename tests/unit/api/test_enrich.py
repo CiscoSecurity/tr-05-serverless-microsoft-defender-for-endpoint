@@ -117,20 +117,24 @@ def test_enrich_call_success(call_api, route, client, valid_jwt,
 
 
 @mock.patch('requests.Session.get')
-def test_enrich_call_invalid_auth_401_error(get_token, route, client,
+def test_enrich_call_invalid_auth_401_error(responses, route, client,
                                             valid_jwt, valid_json):
 
     res = mock.MagicMock()
     res.ok = False
     res.status_code = HTTPStatus.UNAUTHORIZED
-    get_token.return_value = res
+
+    responses.side_effect = (
+        mock.MagicMock(),
+        res
+    )
 
     response = client.post(
         route, headers=headers(valid_jwt), json=valid_json
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.get_json() == EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR
+    assert response.get_json()['errors'][0]['code'] == 'authorization error'
 
 
 @mock.patch('requests.Session.get')

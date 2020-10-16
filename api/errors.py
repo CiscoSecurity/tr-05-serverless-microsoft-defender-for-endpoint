@@ -3,6 +3,7 @@ PERMISSION_DENIED = 'permission denied'
 UNKNOWN = 'unknown'
 INTERNAL_SERVER_ERROR = 'internal error'
 TOO_MANY_REQUESTS = 'too many requests'
+AUTH_ERROR = 'authorization error'
 
 
 class CTRBaseError(Exception):
@@ -36,10 +37,10 @@ class CTRInvalidJWTError(CTRBaseError):
 
 
 class CTRUnexpectedResponseError(CTRBaseError):
-    def __init__(self, payload):
-        if payload and payload.get('error_description'):
+    def __init__(self, error):
+        if error and error.get('error_description'):
             message = f'Microsoft Defender ATP returned unexpected error. ' \
-                      f'Details: {payload["error_description"]}'
+                      f'Details: {error["error_description"]}'
         else:
             message = 'Something went wrong.'
 
@@ -50,10 +51,10 @@ class CTRUnexpectedResponseError(CTRBaseError):
 
 
 class CTRBadRequestError(CTRBaseError):
-    def __init__(self, error_message=None):
+    def __init__(self, error=None):
         message = 'Invalid request to Microsoft Defender ATP.'
-        if error_message:
-            message += f' {error_message}'
+        if error:
+            message += f' {error}'
         super().__init__(
             INVALID_REQUEST,
             message
@@ -69,10 +70,10 @@ class CTRInternalServerError(CTRBaseError):
 
 
 class CTRTooManyRequestsError(CTRBaseError):
-    def __init__(self, response=None):
-        if '/advancedqueries/run' in response.url:
+    def __init__(self, error=None):
+        if '/advancedqueries/run' in error.url:
             message = f'Advanced Hunting API rate limit has been exceeded. ' \
-                      f'{response.json()["error"]}'
+                      f'{error.json()["error"]}'
         else:
             message = 'Too many requests to Microsoft Defender ATP ' \
                       'have been made. Please, try again later.'
@@ -89,4 +90,13 @@ class CTRSSLError(CTRBaseError):
         super().__init__(
             UNKNOWN,
             f'Unable to verify SSL certificate: {message}'
+        )
+
+
+class AuthorizationError(CTRBaseError):
+    def __init__(self, error):
+
+        super().__init__(
+            AUTH_ERROR,
+            f"Authorization failed: {error}"
         )
