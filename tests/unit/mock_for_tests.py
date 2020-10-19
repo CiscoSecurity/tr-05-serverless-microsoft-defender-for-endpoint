@@ -506,13 +506,12 @@ EXPECTED_RESPONSE_WRONG_AUTH_TYPE_ERROR = {
 }
 
 
-EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR = {
-    "errors": [
-        {
-            "code": "permission denied",
-            "message": "The request is missing valid credentials.",
-            "type": "fatal"
-        }
+EXPECTED_RESPONSE_WRONG_AUTH_TYPE_ERROR = {
+    'errors': [
+        {'code': 'authorization error',
+         'message': 'Authorization failed: Wrong authorization type',
+         'type': 'fatal'
+         }
     ]
 }
 
