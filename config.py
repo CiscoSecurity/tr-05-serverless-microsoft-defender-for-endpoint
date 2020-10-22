@@ -21,12 +21,13 @@ class Config:
     MD_ATP_OBSERVABLE_TYPES = {
         'sha1': 'SHA1',
         'sha256': 'SHA256',
+        'md5': 'MD5',
         'ip': 'IP',
         'ipv6': 'IPV6',
         'domain': 'Domain'
     }
 
-    CTIM_SCHEMA_VERSION = '1.0.16'
+    CTIM_SCHEMA_VERSION = '1.0.17'
 
     CTR_HEADERS = {
         'User-Agent': 'Cisco-CiscoThreatResponseMicrosoftDefenderATP/1.0.0'

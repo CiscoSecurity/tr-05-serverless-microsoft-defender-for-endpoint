@@ -18,7 +18,7 @@ get_observables = partial(get_json, schema=ObservableSchema(many=True))
 
 
 def get_alert(client, observable):
-    if observable['type'] == 'sha256':
+    if observable['type'] in ('sha256', 'md5'):
         url = client.format_url('files', observable['value'])
         response = client.call_api(url)[0]
         if response is not None:
@@ -33,7 +33,11 @@ def get_alert(client, observable):
         url = client.format_url('domains', observable['value'], '/alerts')
         response = client.call_api(url)[0]
 
-    elif observable['type'] in ('ip', 'ipv6'):
+    elif observable['type'] == 'ip':
+        url = client.format_url('ips', observable['value'], '/alerts')
+        response = client.call_api(url)[0]
+    elif observable['type'] == 'ipv6':
+        # It does not work now. The ipv6 returns status code 400.
         url = client.format_url('ips', observable['value'], '/alerts')
         response = client.call_api(url)[0]
 
@@ -47,12 +51,13 @@ def call_advanced_hunting(client, o_value, o_type, limit):
     name_fields = {
         'sha1': 'SHA1',
         'sha256': 'SHA256',
+        'md5': 'MD5',
         'domain': 'RemoteUrl',
         'ip': 'RemoteIP',
         'ipv6': 'RemoteIP'
     }
 
-    if o_type in ('sha1', 'sha256'):
+    if o_type in ('sha1', 'sha256', 'md5'):
         query = "DeviceFileEvents " \
                 f"| where {name_fields[o_type]} == '{o_value}' " \
                 "| join kind=leftouter (DeviceNetworkInfo " \
@@ -75,7 +80,7 @@ def call_advanced_hunting(client, o_value, o_type, limit):
     if error is not None:
         CTRBadRequestError(error)
 
-    return result['Results']
+    return result.get('Results', [])
 
 
 @enrich_api.route('/deliberate/observables', methods=['POST'])
@@ -123,6 +128,7 @@ def observe_observables():
                 observable['value'], observable['type'],
                 current_app.config['CTR_ENTITIES_LIMIT'] - count)
             count = count + len(events)
+            events.sort(key=lambda x: x['Timestamp'], reverse=True)
 
         mapping = Mapping(client, observable, count)
 
