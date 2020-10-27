@@ -23,7 +23,7 @@ def invalid_json():
 def test_respond_trigger_wrong_key(route, client, valid_jwt):
 
     invalid_json = {
-        'wrong_key': 'microsoft-defender-atp-submit-indicator-alert',
+        'wrong_key': 'defender-add-indicator-alert',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }
@@ -50,7 +50,7 @@ def test_respond_trigger_wrong_key(route, client, valid_jwt):
 def test_respond_trigger_unsupported_type_json(route, client, valid_jwt):
 
     invalid_json = {
-        'action-id': 'microsoft-defender-atp-submit-indicator-alert',
+        'action-id': 'defender-add-indicator-alert',
         'observable_type': 'unknown',
         'observable_value': 'asdf.com'
     }
@@ -116,6 +116,7 @@ def test_respond_trigger_api_return_400(api_response, route,
             mock_response = mock.MagicMock()
             mock_response.ok = False
             mock_response.status_code = HTTPStatus.BAD_REQUEST
+            mock_response.json.return_value = {'error': 'It is a bad request'}
             return mock_response
 
         def get(self, *args, **kwargs):
@@ -128,7 +129,7 @@ def test_respond_trigger_api_return_400(api_response, route,
     api_response.return_value = Session
 
     valid_json = {
-        'action-id': 'microsoft-defender-atp-submit-indicator-alert',
+        'action-id': 'defender-add-indicator-alert',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }
@@ -145,7 +146,8 @@ def test_respond_trigger_api_return_400(api_response, route,
         'errors': [
             {
                 'code': 'invalid request',
-                'message': 'Invalid request to Microsoft Defender ATP.',
+                'message': 'Invalid request to Microsoft Defender ATP. '
+                           'It is a bad request',
                 'type': 'fatal'
             }
         ]
@@ -159,7 +161,7 @@ def test_respond_trigger_api_return_400(api_response, route,
 def test_respond_trigger_success(call_api, route, client, valid_jwt):
 
     valid_json = {
-        'action-id': 'microsoft-defender-atp-submit-indicator-alert',
+        'action-id': 'defender-add-indicator-alert',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }

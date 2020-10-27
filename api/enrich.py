@@ -1,13 +1,15 @@
 import json
+from os import cpu_count
 from functools import partial
 from flask import Blueprint, current_app, g
+from concurrent.futures import ThreadPoolExecutor
 
 from api.schemas import ObservableSchema
 from api.utils import (get_json, get_jwt, jsonify_data, jsonify_errors,
                        group_observables, format_docs)
 from api.errors import CTRBadRequestError
 from api.client import Client
-from api.mapping import get_sightings_from_ah, get_sightings_from_alert
+from api.mapping import Mapping
 
 enrich_api = Blueprint('enrich', __name__)
 
@@ -16,63 +18,69 @@ get_observables = partial(get_json, schema=ObservableSchema(many=True))
 
 
 def get_alert(client, observable):
-    if observable['type'] == 'sha256':
-        entity = 'files'
-        url = client.format_url(entity, observable['value'])
+    if observable['type'] in ('sha256', 'md5'):
+        url = client.format_url('files', observable['value'])
         response = client.call_api(url)[0]
         if response is not None:
-            url = client.format_url(entity, response['sha1'], '/alerts')
+            url = client.format_url('files', response['sha1'], '/alerts')
             response = client.call_api(url)[0]
 
     elif observable['type'] == 'sha1':
-        entity = 'files'
-        url = client.format_url(entity, observable['value'], '/alerts')
+        url = client.format_url('files', observable['value'], '/alerts')
         response = client.call_api(url)[0]
 
     elif observable['type'] == 'domain':
-        entity = 'urls'
         url = client.format_url('domains', observable['value'], '/alerts')
         response = client.call_api(url)[0]
 
     elif observable['type'] == 'ip':
-        entity = 'ips'
-        url = client.format_url(entity, observable['value'], '/alerts')
+        url = client.format_url('ips', observable['value'], '/alerts')
+        response = client.call_api(url)[0]
+    elif observable['type'] == 'ipv6':
+        # It does not work now. The ipv6 returns status code 400.
+        url = client.format_url('ips', observable['value'], '/alerts')
         response = client.call_api(url)[0]
 
     else:
         raise CTRBadRequestError(
             f"'{observable['type']}' type is not supported.")
-    return response, entity
+    return response
 
 
 def call_advanced_hunting(client, o_value, o_type, limit):
-    queries = {
-        'sha1': "DeviceFileEvents "
-                "| where SHA1 == '{o_value}' "
-                "| limit {limit}",
-        'sha256': "DeviceFileEvents "
-                  "| where SHA256 == '{o_value}' "
-                  "| limit {limit}",
-        'md5': "DeviceFileEvents "
-               "| where MD5 == '{o_value}' "
-               "| limit {limit}",
-        'ip': "DeviceNetworkEvents "
-              "| where RemoteIP == '{o_value}' "
-              "| limit {limit}",
-        'domain': "DeviceNetworkEvents "
-                  "| where RemoteUrl == '{o_value}' "
-                  "| limit {limit}"
+    name_fields = {
+        'sha1': 'SHA1',
+        'sha256': 'SHA256',
+        'md5': 'MD5',
+        'domain': 'RemoteUrl',
+        'ip': 'RemoteIP',
+        'ipv6': 'RemoteIP'
     }
-    query = queries[o_type].format(o_value=o_value, limit=limit)
+
+    if o_type in ('sha1', 'sha256', 'md5'):
+        query = "DeviceFileEvents " \
+                f"| where {name_fields[o_type]} == '{o_value}' " \
+                "| join kind=leftouter (DeviceNetworkInfo " \
+                "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) " \
+                "by DeviceId, NetworkAdapterType, MacAddress, " \
+                f"DeviceName, IPAddresses) on DeviceId | limit {limit}"
+    else:
+        query = "DeviceNetworkEvents " \
+                f"| where {name_fields[o_type]} == '{o_value}' " \
+                "| join kind=leftouter (DeviceNetworkInfo " \
+                "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) " \
+                "by DeviceId, NetworkAdapterType, MacAddress, " \
+                f"DeviceName, IPAddresses) on DeviceId | limit {limit}"
+
     query = json.dumps({'Query': query}).encode('utf-8')
     result, error = client.call_api(
         current_app.config['ADVANCED_HUNTING_URL'],
-        'POST', query)
+        'POST', data=query)
 
     if error is not None:
         CTRBadRequestError(error)
 
-    return result['Results']
+    return result.get('Results', [])
 
 
 @enrich_api.route('/deliberate/observables', methods=['POST'])
@@ -101,7 +109,7 @@ def observe_observables():
     for observable in observables:
         client.open_session()
 
-        response, entity = get_alert(client, observable)
+        response = get_alert(client, observable)
 
         if not response or not response.get('value'):
             alerts = []
@@ -120,19 +128,30 @@ def observe_observables():
                 observable['value'], observable['type'],
                 current_app.config['CTR_ENTITIES_LIMIT'] - count)
             count = count + len(events)
+            events.sort(key=lambda x: x['Timestamp'], reverse=True)
 
-        for alert in alerts:
-            sighting = get_sightings_from_alert(client, alert,
-                                                observable, count, entity)
+        mapping = Mapping(client, observable, count)
 
-            g.sightings.append(sighting)
+        if alerts:
+            with ThreadPoolExecutor(
+                    max_workers=min(
+                        len(alerts),
+                        cpu_count() or 1
+                    ) * 5) as executor:
+                alerts = executor.map(mapping.build_sighting_from_alert,
+                                      alerts)
 
-        for event in events:
-            sighting = get_sightings_from_ah(client,
-                                             event,
-                                             observable,
-                                             count)
-            g.sightings.append(sighting)
+            [g.sightings.append(alert) for alert in alerts if alert]
+
+        if events:
+            with ThreadPoolExecutor(
+                    max_workers=min(
+                        len(events),
+                        cpu_count() or 1
+                    ) * 5) as executor:
+                events = executor.map(mapping.build_sighting_from_ah, events)
+
+            [g.sightings.append(event) for event in events if event]
 
     client.close_session()
 
@@ -144,5 +163,48 @@ def observe_observables():
 
 @enrich_api.route('/refer/observables', methods=['POST'])
 def refer_observables():
-    # Not supported or implemented
-    return jsonify_data([])
+    observables, error = get_observables()
+
+    if error:
+        return jsonify_errors(error)
+
+    observables = group_observables(observables)
+
+    data = []
+
+    for observable in observables:
+        o_type = observable['type']
+        o_value = observable['value']
+
+        if o_type in ('sha1', 'sha256'):
+            entity = 'files'
+        elif o_type in ('ip', 'ipv6'):
+            entity = 'ips'
+        elif o_type == 'domain':
+            entity = 'urls'
+        else:
+            continue
+
+        title = 'Search for this {o_type}'.format(
+            o_type=current_app.config["MD_ATP_OBSERVABLE_TYPES"][o_type]
+        )
+        description = 'Lookup this {o_type} on Microsoft Defender ATP'.format(
+            o_type=current_app.config['MD_ATP_OBSERVABLE_TYPES'][o_type]
+        )
+        url = '{host}/{entity}/{o_value}'.format(
+            host=current_app.config['SECURITY_CENTER_URL'],
+            entity=entity,
+            o_value=o_value
+        )
+
+        data.append(
+            {
+                'id': f'ref-mdatp-search-{o_type}-{o_value}',
+                'title': title,
+                'description': description,
+                'url': url,
+                'categories': ['Search', 'Microsoft Defender ATP']
+            }
+        )
+
+    return jsonify_data(data)

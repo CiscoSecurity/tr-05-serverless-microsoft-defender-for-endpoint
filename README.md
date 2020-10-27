@@ -1,3 +1,4 @@
+[![Gitter Chat](https://img.shields.io/badge/gitter-join%20chat-brightgreen.svg)](https://gitter.im/CiscoSecurity/Threat-Response "Gitter Chat")
 [![Travis CI Build Status](https://travis-ci.com/CiscoSecurity/tr-05-serverless-microsoft-defender-atp.svg?branch=develop)](https://travis-ci.com/CiscoSecurity/tr-05-serverless-microsoft-defender-atp)
 
 # Microsoft Defender ATP Relay
@@ -165,22 +166,21 @@ corresponding value from the previous step.
 - Create a corresponding Threat Response module based on your Lambda.
 
 To simplify the JWT-related stuff, we have prepared for you the
-[JWT Generator](https://github.com/CiscoSecurity/tr-05-jwt-generator) script.
+[Threat Response JWT Generator](https://github.com/CiscoSecurity/tr-05-jwt-generator)
+tool that provides only a single easy-to-use `jwt` command. Since the tool is
+included into the [requirements.txt](requirements.txt) file, at this point it
+should already have been installed along with the other dependencies.
 
 Follow the steps below to finish the deployment procedure:
 
-1. Copy the script from its repository into the applications's root directory
-(i.e. the same directory where the document you are currently reading is
-located in).
-
-2. Run the script specifying a Zappa stage, e.g. `python jwt_generator.py dev`.
+1. Run the `jwt` command of the tool specifying a Zappa stage, e.g. `jwt dev`.
 It will prompt you to enter your third-party credentials according to the `jwt`
 structure defined in the [Module Settings](module_settings.json).
 
-3. The script will generate a `SECRET_KEY`/`JWT` pair for you based on your
+2. The command will generate a `SECRET_KEY`/`JWT` pair for you based on your
 just entered credentials. Make sure to save both.
 
-4. The script will also build the link to the AWS Console page with your
+3. The command will also build the link to the AWS Console page with your
 Lambda's environment variables. Go set the `SECRET_KEY` environment variable
 there. This is important since the Lambda has to know the `SECRET_KEY` so that
 it can verify and decode the `JWT` from incoming requests. If you do not
@@ -188,14 +188,11 @@ understand how to set the `SECRET_KEY` environment variable then check the
 [AWS Environment Variables](aws/EnvironmentVariables.md) guide on passing
 arbitrary environment variables to Lambdas.
 
-5. The script will also build the links to the Threat Response pages (in all
+4. The command will also build the links to the Threat Response pages (in all
 available regions) with the corresponding module creation forms. Select the
 link corresponding to your Threat Response region. The form there will require
 you to enter both your Lambda's `URL` and your `JWT` (along with a unique name)
 to finally create your Threat Response module.
-
-6. Remove the script from the applications's root directory. It will not be
-needed anymore.
 
 That is it! Your Serverless Relay is ready to use! Congratulations!
 
@@ -245,6 +242,21 @@ header set to `Bearer <JWT>`.
   - Returns a list per each of the following CTIM entities (if any extracted):
     - `Sighting`.
 
+- `POST /respond/observables`
+  - Accepts a list of observables and filters out unsupported ones.
+  - Verifies the Authorization Bearer JWT and decodes it to restore the
+  original credentials.
+  - Makes a series of requests to the underlying external service to query for
+  actions available for given observables.
+  - Returns a list of those actions.
+
+- `POST /respond/trigger`
+  - Accepts an observable and an action.
+  - Verifies the Authorization Bearer JWT and decodes it to restore the
+  original credentials.
+  - Triggers an action at the underlying external service.
+  - Returns an action result.
+
 - `POST /refer/observables`
   - Accepts a list of observables and filters out unsupported ones.
   - Builds a search link per each supported observable to pivot back to the
@@ -256,7 +268,6 @@ header set to `Bearer <JWT>`.
 - `ip`
 - `ipv6`
 - `domain`
-- `md5`
 - `sha1`
 - `sha256`
 
@@ -276,16 +287,42 @@ to list [alerts](https://docs.microsoft.com/en-us/windows/security/threat-protec
 and [Advanced hunting API](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/run-advanced-query-api). 
 The following permissions are required to work with this module.
 
-| Permission type                    | Permission             | Permission display name     |
-|------------------------------------|------------------------|-----------------------------|
-| Application                        | File.Read.All          | 'Read all file profiles'    |
-| Application                        | Alert.Read.All         | 'Read all alerts'           |
-| Application                        | Alert.ReadWrite.All    | 'Read and write all alerts' |
-| Application                        | AdvancedQuery.Read.All | 'Run advanced queries'      |
-| Delegated (work or school account) | File.Read.All          | 'Read all file profiles'    |
-| Delegated (work or school account) | Alert.Read             | 'Read alerts'               |
-| Delegated (work or school account) | Alert.ReadWrite        | 'Read and write alerts'     |
-| Delegated (work or school account) | AdvancedQuery.Read     | 'Run advanced queries'      |
+| Permission type                    | Permission             | Permission display name                  |
+|------------------------------------|------------------------|------------------------------------------|
+| Application                        | File.Read.All          | 'Read all file profiles'                 |
+| Application                        | Alert.Read.All         | 'Read all alerts'                        |
+| Application                        | Alert.ReadWrite.All    | 'Read and write all alerts'              |
+| Application                        | Machine.Read.All       | 'Read all machine profiles'              |
+| Application                        | Machine.ReadWrite.All  | 'Read and write all machine information' |
+| Application                        | AdvancedQuery.Read.All | 'Run advanced queries'                   |
+| Delegated (work or school account) | File.Read.All          | 'Read all file profiles'                 |
+| Delegated (work or school account) | Alert.Read             | 'Read alerts'                            |
+| Delegated (work or school account) | Alert.ReadWrite        | 'Read and write alerts'                  |
+| Delegated (work or school account) | Machine.Read           | 'Read machine information'               |
+| Delegated (work or school account) | Machine.ReadWrite      | 'Read and write machine information'     |
+| Delegated (work or school account) | AdvancedQuery.Read     | 'Run advanced queries'                   |
+
+The following permissions are required to use **actions** for machines.
+
+| Action                             | Permission type                    | Permission                 | Permission display name        |
+|------------------------------------|------------------------------------|----------------------------|--------------------------------|
+| Collect investigation package API  | Application                        | Machine.CollectForensics   | 'Collect forensics'            |
+| Isolate machine API                | Application                        | Machine.Isolate            | 'Isolate machine'              |
+| Release device from isolation API  | Application                        | Machine.Isolate            | 'Isolate machine'              |
+| Restrict app execution API         | Application                        | Machine.RestrictExecution  | 'Restrict code execution'      |
+| Remove app restriction API         | Application                        | Machine.RestrictExecution  | 'Restrict code execution'      |
+| Run antivirus scan API             | Application                        | Machine.Scan               | 'Scan machine'                 |
+| Submit or Update Indicator API     | Application                        | Ti.ReadWrite               | 'Read and write Indicators'    |
+| Submit or Update Indicator API     | Application                        | Ti.ReadWrite.All           | 'Read and write All Indicators'|
+| Start Investigation API            | Application                        | Alert.ReadWrite.All        | 'Read and write all alerts'    |
+| Collect investigation package API  | Delegated (work or school account) | Machine.CollectForensics   | 'Collect forensics'            |
+| Isolate machine API                | Delegated (work or school account) | Machine.Isolate            | 'Isolate machine'              |
+| Release device from isolation API  | Delegated (work or school account) | Machine.Isolate            | 'Isolate machine'              |
+| Restrict app execution API         | Delegated (work or school account) | Machine.RestrictExecution  | 'Restrict code execution'      |
+| Remove app restriction API         | Delegated (work or school account) | Machine.RestrictExecution  | 'Restrict code execution'      |
+| Run antivirus scan API             | Delegated (work or school account) | Machine.Scan               | 'Scan machine'                 |
+| Submit or Update Indicator API     | Delegated (work or school account) | Ti.ReadWrite               | 'Read and write Indicators'    |
+| Start Investigation API            | Delegated (work or school account) | Alert.ReadWrite            | 'Read and write alerts'        |
 
 ### Supported Environment Variables
 
@@ -295,6 +332,7 @@ The following permissions are required to work with this module.
   - Applies to the following CTIM entities:
     - `Sighting`.
   - Must be a positive integer. Defaults to `100` (if unset or incorrect).
+  > **Warning**: When you receive the "Advanced Hunting API rate limit has been exceeded. ..." error, you can fix this by decreasing the value of the "CTR_ENTITES_LIMIT" variable. 
 
 ### CTIM Mapping Specifics
 
@@ -306,13 +344,19 @@ Each `Sighting` for a supported observable is based on a matching alert or event
 which happened on one of the machines that were added to the monitoring of Microsoft Defender ATP. 
 Alerts and events from the Advanced Hunting API have different response structures. 
 Events depend on the types of observable and the differences between them. 
+
+Steps performed when interacting with the service:
+  1. We make a request to receive Defender ATP alerts.
+  2. If the number of alerts is fewer than the value of the `CTR_ENTITIES_LIMIT` variable then we make a request to the Advanced Hunting API.
+  3. For each alert we get additional information by making a request to the [Defender ATP endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id) and the Advanced Hunting API.
+  4. When processing events we make a request to [Defender ATP endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id) to receive additional information.
+
 There are examples of mapping fields for alerts below:
 
 - `description` of an alert is mapped to `description` of a Sighting, but the event does not have this field.
 
 - `targets` of a `Sighting` are based on `computerDnsName` of an alert. 
   We make a request to [endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id) using `machineId`
-  - `lastIpAddress` is used in `targets[].observables[]` as `{"type": "ip", "value": <lastIpAddress>}`
   - `osPlatform` as `targets[].os`
   - `firstEventTime` as `targets[].observed_time.start_time`
  

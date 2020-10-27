@@ -466,24 +466,52 @@ EXPECTED_RESPONSE = {
 }
 
 
-EXPECTED_RESPONSE_AUTH_ERROR = {
-    "errors": [
+EXPECTED_RESPONSE_BAD_SIGNATURE = {
+    'errors': [
         {
-            "code": "permission denied",
-            "message": "Invalid Authorization Bearer JWT.",
-            "type": "fatal"
+            'code': 'authorization error',
+            'message': 'Authorization failed: '
+                       'Failed to decode JWT with provided key',
+            'type': 'fatal'
         }
     ]
 }
 
 
-EXPECTED_RESPONSE_INVALID_CREDENTIALS_ERROR = {
-    "errors": [
-        {
-            "code": "permission denied",
-            "message": "The request is missing valid credentials.",
-            "type": "fatal"
-        }
+EXPECTED_RESPONSE_AUTH_ERROR = {
+    'errors': [
+        {'code': 'authorization error',
+         'message': 'Authorization failed: Auth Boom.',
+         'type': 'fatal'
+         }
+    ]
+}
+
+EXPECTED_RESPONSE_MISS_AUTH_ERROR = {
+    'errors': [
+        {'code': 'authorization error',
+         'message': 'Authorization failed: Authorization header is missing',
+         'type': 'fatal'
+         }
+    ]
+}
+
+EXPECTED_RESPONSE_WRONG_AUTH_TYPE_ERROR = {
+    'errors': [
+        {'code': 'authorization error',
+         'message': 'Authorization failed: Wrong authorization type',
+         'type': 'fatal'
+         }
+    ]
+}
+
+
+EXPECTED_RESPONSE_WRONG_AUTH_TYPE_ERROR = {
+    'errors': [
+        {'code': 'authorization error',
+         'message': 'Authorization failed: Wrong authorization type',
+         'type': 'fatal'
+         }
     ]
 }
 
@@ -829,53 +857,50 @@ AH_RESPONSE = {
             "SensitivitySubLabel": "",
             "IsAzureInfoProtectionApplied": None,
             "ReportId": 14689,
-            "AppGuardContainerId": ""
+            "AppGuardContainerId": "",
+            "MacAddress": "00224843C030",
+            "IPAddresses": '[{"IPAddress": "10.1.1.68", "SubnetPrefix": 26, '
+                           '"AddressType": "Private"}, '
+                           '{"IPAddress": "fe80::6d25:8926:20c3:49ea", '
+                           '"SubnetPrefix": 64, "AddressType": "Private"}]'
         },
     ]
 }
 
 EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
-  "data": [
-    {
-      "categories": [
-        "Microsoft Defender ATP",
-        "Submit Indicator"
-      ],
-      "description": "Submit indicator with alert action for DOMAIN",
-      "id": "microsoft-defender-atp-submit-indicator-alert",
-      "query-params": {
-        "observable_type": "domain",
-        "observable_value": "asdf.com"
-      },
-      "title": "Submit indicator with Alert"
-    },
-    {
-      "categories": [
-        "Microsoft Defender ATP",
-        "Submit Indicator"
-      ],
-      "description": "Submit indicator with Alert and Block action for DOMAIN",
-      "id": "microsoft-defender-atp-submit-indicator-alert-and-block",
-      "query-params": {
-        "observable_type": "domain",
-        "observable_value": "asdf.com"
-      },
-      "title": "Submit indicator with Alert and Block"
-    },
-    {
-      "categories": [
-        "Microsoft Defender ATP",
-        "Submit Indicator"
-      ],
-      "description": "Submit indicator with Allowed action for DOMAIN",
-      "id": "microsoft-defender-atp-submit-indicator-allowed",
-      "query-params": {
-        "observable_type": "domain",
-        "observable_value": "asdf.com"
-      },
-      "title": "Submit indicator with Allowed"
-    }
-  ]
+    'data': [
+        {
+            'categories': ['Defender ATP', 'Add Indicator'],
+            'description': 'Add indicator with Alert action for asdf.com',
+            'id': 'defender-add-indicator-alert',
+            'query-params': {
+                'observable_type': 'domain',
+                'observable_value': 'asdf.com'
+            },
+            'title': 'Add indicator: Alert'
+        },
+        {
+            'categories': ['Defender ATP', 'Add Indicator'],
+            'description': 'Add indicator with Alert and Block action '
+                           'for asdf.com',
+            'id': 'defender-add-indicator-alert-and-block',
+            'query-params': {
+                'observable_type': 'domain',
+                'observable_value': 'asdf.com'
+            },
+            'title': 'Add indicator: Alert and Block'
+        },
+        {
+            'categories': ['Defender ATP', 'Add Indicator'],
+            'description': 'Add indicator with Allow action for asdf.com',
+            'id': 'defender-add-indicator-allowed',
+            'query-params': {
+                'observable_type': 'domain',
+                'observable_value': 'asdf.com'
+            },
+            'title': 'Add indicator: Allow'
+        }
+    ]
 }
 
 AVAILABLE_MACHINE_ACTIONS_RESPONSE = {

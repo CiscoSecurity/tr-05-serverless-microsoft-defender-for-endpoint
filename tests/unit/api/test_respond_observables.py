@@ -62,9 +62,18 @@ def test_respond_observables_unsupported_observables(route, client, valid_jwt,
     assert response.get_json() == expected_payload
 
 
-def test_respond_observables_success(route, client, valid_jwt):
+@mock.patch('api.client.Client.call_api')
+def test_respond_observables_success(call_api, route, client, valid_jwt):
 
     valid_json = [{'type': 'domain', 'value': 'asdf.com'}]
+
+    call_api.return_value = (
+        {
+            '@odata.context': 'https://api.securitycenter.windows.com'
+                              '/api/v1.0/$metadata#Indicators',
+            'value': []},
+        None
+    )
 
     response = client.post(route,
                            headers=headers(valid_jwt),

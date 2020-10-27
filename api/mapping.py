@@ -1,4 +1,10 @@
 import uuid
+import json
+from functools import lru_cache
+
+from flask import current_app
+
+from api.utils import is_url
 
 
 SEVERITY = {
@@ -11,558 +17,687 @@ SEVERITY = {
 
 
 CTIM_SCHEMA_VERSION = {
-    'schema_version': '1.0.16',
+    'schema_version': '1.0.17',
 }
 
 
-def _get_target_from_alert(client, alert):
-    url = client.format_url('machines', alert['machineId'])
-    res = client.call_api(url)[0]
+class Mapping:
+    def __init__(self, client, observable, count):
+        self.client = client
+        self.observable = observable
+        self.count = count
+        self.source = 'Microsoft Defender ATP'
+        self.default_sighting = {
+                'type': 'sighting',
+                'confidence': 'High',
+                'internal': True,
+                'source': self.source,
+                'sensor': 'endpoint',
+                **CTIM_SCHEMA_VERSION
+            }
+        self.relations = []
+        self._adv_hunting_url = current_app.config['ADVANCED_HUNTING_URL']
 
-    observables = [
-        {'type': 'hostname', 'value': alert['computerDnsName']},
-        {'type': 'ip', 'value': res['lastIpAddress']},
-        {'type': 'device', 'value': alert['machineId']}
-    ]
+    @staticmethod
+    def _observable_type4url(url):
+        return 'url' if is_url(url) else 'domain'
 
-    return {
-        'type': 'endpoint',
-        'os': res['osPlatform'],
-        'observables': observables,
-        'observed_time': {
-            'start_time': alert['firstEventTime'],
-            'end_time': alert['firstEventTime']
+    @lru_cache(maxsize=512)
+    def _call_hashes(self, value):
+        sha1 = sha256 = md5 = None
+
+        url = self.client.format_url('files', value)
+        res = self.client.call_api(url)[0]
+
+        if res.get('sha1'):
+            sha1 = res['sha1']
+
+        if res.get('sha256'):
+            sha256 = res['sha256']
+
+        if res.get('md5'):
+            md5 = res['md5']
+
+        return sha1, sha256, md5
+
+    @staticmethod
+    def _add_relation(origin, relation, source, related):
+        return {
+            'origin': origin,
+            'relation': relation,
+            'source': source,
+            'related': related
         }
-    }
 
-
-def _get_target_from_ah(client, event):
-    url = client.format_url('machines', event['DeviceId'])
-    res = client.call_api(url)[0]
-
-    observables = [
-        {'type': 'hostname', 'value': event['DeviceName']},
-        {'type': 'ip', 'value': res['lastIpAddress']},
-        {'type': 'device', 'value': event['DeviceId']}
-    ]
-
-    return {
-        'type': 'endpoint',
-        'os': res['osPlatform'],
-        'observables': observables,
-        'observed_time': {
-            'start_time': event['Timestamp'],
-            'end_time': event['Timestamp']
-        }
-    }
-
-
-def _add_relation(origin, relation, source, related):
-    return {
-        'origin': origin,
-        'relation': relation,
-        'source': source,
-        'related': related
-    }
-
-
-def get_sightings_from_alert(client, alert, observable, count, entity):
-    sighting = {
-        'type': 'sighting',
-        'confidence': 'High',
-        'internal': True,
-        'source': 'Microsoft Defender ATP',
-        'sensor': 'endpoint',
-        **CTIM_SCHEMA_VERSION
-    }
-
-    targets = []
-    relations = []
-
-    if alert['computerDnsName']:
-        targets.append(_get_target_from_alert(client, alert))
-
-    for evidence in alert['evidence']:
-        def _related_sha1(value):
-            return {'value': value, 'type': 'sha1'}
-
-        def _related_sha256(value):
-            return {'value': value, 'type': 'sha256'}
-
-        if evidence.get('parentProcessId'):
-            for e in alert['evidence']:
-                if e['processId'] == evidence['parentProcessId']:
-                    relations.append(
-                        _add_relation(
-                            alert['detectionSource'],
-                            'Injected_Into',
-                            {'value': evidence['fileName'],
-                             'type': 'file_name'},
-                            {'value': e['fileName'],
-                             'type': 'file_name'}
-                        )
-                    )
-
-        if evidence.get('fileName'):
-            if evidence.get('sha1'):
-                relations.append(
-                    _add_relation(
-                        alert['detectionSource'],
-                        'File_Name_Of',
-                        {'value': evidence['fileName'],
-                         'type': 'file_name'},
-                        _related_sha1(evidence['sha1'])
-                    )
-                )
-
-            if evidence.get('sha256'):
-                relations.append(
-                    _add_relation(
-                        alert['detectionSource'],
-                        'File_Name_Of',
-                        {'value': evidence['fileName'],
-                         'type': 'file_name'},
-                        _related_sha256(evidence['sha256'])
-                    )
-                )
-
-        if evidence.get('filePath'):
-            if evidence.get('sha1'):
-                relations.append(
-                    _add_relation(
-                        alert['detectionSource'],
-                        'File_Path_Of',
-                        {'value': evidence['filePath'],
-                         'type': 'file_path'},
-                        _related_sha1(evidence['sha1'])
-                    )
-                )
-
-            if evidence.get('sha256'):
-                relations.append(
-                    _add_relation(
-                        alert['detectionSource'],
-                        'File_Path_Of',
-                        {'value': evidence['filePath'],
-                         'type': 'file_path'},
-                        _related_sha256(evidence['sha256'])
-                    )
-                )
-
-    sighting['targets'] = targets
-    sighting['relations'] = relations
-
-    sighting['id'] = f'transient-sighting:{uuid.uuid4()}'
-    sighting['count'] = count
-    sighting['observables'] = [observable, ]
-    sighting['observed_time'] = {
-        'start_time': alert['firstEventTime'],
-        'end_time': alert['firstEventTime']
-    }
-    sighting['title'] = alert['title']
-    sighting['description'] = alert['description']
-    sighting['severity'] = SEVERITY.get(alert['severity'], None)
-    sighting['timestamp'] = alert['lastUpdateTime']
-    sighting['source_uri'] = 'https://securitycenter.windows.com/' \
-                             '{entity}/' \
-                             '{o_value}/' \
-                             'alerts'.format(entity=entity,
-                                             o_value=observable['value'])
-    return sighting
-
-
-def _get_domain(event, client):
-    origin = 'Microsoft Defender ATP'
-    relations = []
-
-    if event['RemoteIP'] and event['RemoteUrl']:
-        relations.append(_add_relation(
-            origin=origin,
-            relation='Resolved_To',
-            source={'type': 'ip', 'value': event['RemoteIP']},
-            related={'type': 'domain',
-                     'value': event['RemoteUrl']}
-        ))
-        if event['LocalIP']:
-            relations.append(_add_relation(
-                origin=origin,
-                relation='Connected_To',
-                source={'type': 'ip',
-                        'value': event['LocalIP']},
-                related={'type': 'ip',
-                         'value': event['RemoteIP']}
-            ))
-        if event['InitiatingProcessFileName']:
-            relations.append(_add_relation(
-                origin=origin,
-                relation='Connected_To',
-                source={'type': 'file_name',
-                        'value': event[
-                            'InitiatingProcessFileName']},
-                related={'type': 'ip',
-                         'value': event['RemoteIP']}
-            ))
-            if event['InitiatingProcessSHA1']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Name_Of',
-                    source={'type': 'file_name',
-                            'value': event[
-                                'InitiatingProcessFileName']},
-                    related={'type': 'sha1', 'value': event[
-                        'InitiatingProcessSHA1']}
-                ))
-            if event['InitiatingProcessSHA256']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Name_Of',
-                    source={'type': 'file_name',
-                            'value': event[
-                                'InitiatingProcessFileName']},
-                    related={'type': 'sha256',
-                             'value': event['InitiatingProcessSHA256']}
-                ))
-            else:
-                url = client.format_url(
-                    'files', event['InitiatingProcessSHA1'])
-                res = client.call_api(url)[0]
-                if res is not None:
-                    relations.append(_add_relation(
-                        origin=origin,
-                        relation='File_Name_Of',
-                        source={'type': 'file_name',
-                                'value': event[
-                                    'InitiatingProcessFileName']},
-                        related={'type': 'sha256', 'value': res['sha256']}
-                    ))
-            if event['InitiatingProcessMD5']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Name_Of',
-                    source={'type': 'file_name',
-                            'value': event[
-                                'InitiatingProcessFileName']},
-                    related={'type': 'md5',
-                             'value': event[
-                                 'InitiatingProcessMD5']}
-                ))
-            if event['InitiatingProcessFolderPath']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Path_Of',
-                    source={'type': 'file_path',
-                            'value': event[
-                                'InitiatingProcessFolderPath']},
-                    related={'type': 'sha1',
-                             'value': event[
-                                 'InitiatingProcessSHA1']}
-                ))
-            if event['InitiatingProcessParentFileName']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='Related_To',
-                    source={'type': 'file_name',
-                            'value': event[
-                                'InitiatingProcessFileName']},
-                    related={
-                        'type': 'file_name',
-                        'value': event[
-                            'InitiatingProcessParentFileName']}
-                ))
-    return relations
-
-
-def _get_ip(event, client):
-    origin = 'Microsoft Defender ATP'
-    relations = []
-    if event['RemoteIP']:
-        if event['RemoteUrl']:
-            relations.append(_add_relation(
+    def _build_relations_network(self, event, origin):
+        if event['RemoteUrl'] and event['RemoteIP']:
+            self.relations.append(self._add_relation(
                 origin=origin,
                 relation='Resolved_To',
-                source={'type': 'ip',
-                        'value': event['RemoteIP']},
-                related={'type': 'domain',
-                         'value': event[
-                             'RemoteUrl']}
-            ))
-        if event['LocalIP']:
-            relations.append(_add_relation(
-                origin=origin,
-                relation='Connected_To',
-                source={'type': 'ip',
-                        'value': event['LocalIP']},
+                source={'type': self._observable_type4url(event['RemoteUrl']),
+                        'value': event['RemoteUrl']},
                 related={'type': 'ip',
                          'value': event['RemoteIP']}
             ))
-        if event['InitiatingProcessParentFileName']:
-            relations.append(_add_relation(
-                origin=origin,
-                relation='Related_To',
-                source={'type': 'file_name',
-                        'value': event[
-                            'InitiatingProcessFileName']},
-                related={'type': 'ip', 'value': event['RemoteIP']}
-            ))
-            if event['InitiatingProcessSHA1']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Name_Of',
-                    source={'type': 'file_name',
-                            'value': event[
-                                'InitiatingProcessFileName']},
-                    related={'type': 'sha1', 'value': event[
-                        'InitiatingProcessSHA1']}
-                ))
-            if event['InitiatingProcessSHA256']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Name_Of',
-                    source={'type': 'file_name',
-                            'value': event[
-                                'InitiatingProcessFileName']},
-                    related={'type': 'sha256', 'value': event[
-                        'InitiatingProcessSHA256']}
-                ))
-            else:
-                url = client.format_url(
-                    'files', event['InitiatingProcessSHA1'])
-                res = client.call_api(url)[0]
-                if res is not None:
-                    relations.append(_add_relation(
-                        origin=origin,
-                        relation='File_Name_Of',
-                        source={'type': 'file_name',
-                                'value': event[
-                                    'InitiatingProcessFileName']},
-                        related={'type': 'sha256', 'value': res['sha256']}
-                    ))
-            if event['InitiatingProcessMD5']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Name_Of',
-                    source={'type': 'file_name',
-                            'value': event[
-                                'InitiatingProcessFileName']},
-                    related={'type': 'sha1', 'value': event[
-                        'InitiatingProcessMD5']}
-                ))
-            if event['InitiatingProcessFolderPath']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Path_Of',
-                    source={'type': 'file_path',
-                            'value': event[
-                                'InitiatingProcessFolderPath']},
-                    related={'type': 'file_name', 'value': event[
-                        'InitiatingProcessParentFileName']}
-                ))
 
-        if event['InitiatingProcessParentFileName']:
-            relations.append(_add_relation(
+        if event['RemoteIP'] and event['LocalIP']:
+            self.relations.append(self._add_relation(
                 origin=origin,
-                relation='Related_To',
-                source={'type': 'file_name',
-                        'value': event[
-                            'InitiatingProcessParentFileName']},
-                related={'type': 'ip', 'value': event['RemoteIP']}
+                relation='Connect_To',
+                source={'type': 'ip',
+                        'value': event['RemoteIP']},
+                related={'type': 'ip',
+                         'value': event['LocalIP']}
             ))
 
-        if event['InitiatingProcessAccountName']:
-            relations.append(_add_relation(
-                origin=origin,
-                relation='Used',
-                source={'type': 'user',
+        def _make_relations_with_hash(hash_type, event, origin):
+            if event['RemoteUrl']:
+                self.relations.append(self._add_relation(
+                    origin=origin,
+                    relation='Connect_To',
+                    source={
+                        'type': hash_type,
+                        'value': event[f'InitiatingProcess{hash_type.upper()}']
+                    },
+                    related={
+                        'type': self._observable_type4url(event['RemoteUrl']),
+                        'value': event['RemoteUrl']
+                    }
+                ))
+
+            if event['RemoteIP']:
+                self.relations.append(self._add_relation(
+                    origin=origin,
+                    relation='Connect_To',
+                    source={
+                        'type': hash_type,
                         'value': event[
-                            'InitiatingProcessAccountName']},
-                related={'type': 'ip', 'value': event['RemoteIP']}
-            ))
-    return relations
+                            f'InitiatingProcess{hash_type.upper()}']},
+                    related={'type': 'ip',
+                             'value': event['RemoteIP']}
+                ))
+            self._make_2level_hash(hash_type, event, origin)
 
+        if event['InitiatingProcessSHA1'] \
+                and (not event['InitiatingProcessSHA256']
+                     or not event['InitiatingProcessMD5']):
+            _, sha256, md5 = self._call_hashes(event['InitiatingProcessSHA1'])
+            event['InitiatingProcessSHA256'] = sha256
+            event['InitiatingProcessMD5'] = md5
 
-def _get_file(event, client):
-    origin = 'Microsoft Defender ATP'
-    relations = []
-    if event['FileName']:
-        if event['SHA1']:
-            relations.append(_add_relation(
+        elif event['InitiatingProcessSHA256'] \
+                and (not event['InitiatingProcessSHA1']
+                     or not event['InitiatingProcessMD5']):
+            sha1, _, md5 = self._call_hashes(event['InitiatingProcessSHA256'])
+            event['InitiatingProcessSHA1'] = sha1
+            event['InitiatingProcessMD5'] = md5
+
+        if event['InitiatingProcessSHA1']:
+            _make_relations_with_hash('sha1', event, origin)
+
+        if event['InitiatingProcessSHA256']:
+            _make_relations_with_hash('sha256', event, origin)
+
+        if event['InitiatingProcessMD5']:
+            _make_relations_with_hash('md5', event, origin)
+
+    def _build_relations_file(self, event, origin):
+
+        def _get_hashes(event, prefix=None):
+            key_sha1 = prefix + 'SHA1' if prefix else 'SHA1'
+            key_sha256 = prefix + 'SHA256' if prefix else 'SHA256'
+            key_md5 = prefix + 'MD5' if prefix else 'MD5'
+            if event[key_sha1] \
+                    and (not event[key_sha256]
+                         or not event[key_md5]):
+                _, sha256, md5 = self._call_hashes(event[key_sha1])
+                event[key_sha256] = sha256
+                event[key_md5] = md5
+
+            elif event[key_sha256] \
+                    and (not event[key_sha1]
+                         or not event[key_md5]):
+                sha1, _, md5 = self._call_hashes(event[key_sha256])
+                event[key_sha1] = sha1
+                event[key_md5] = md5
+
+            return event[key_sha1], event[key_sha256], event[key_md5]
+
+        sha1, sha256, md5 = _get_hashes(event)
+        if sha1:
+            self._make_1level_hash('SHA1', event, origin)
+
+        if sha256:
+            self._make_1level_hash('SHA256', event, origin)
+
+        if md5:
+            self._make_1level_hash('MD5', event, origin)
+
+        init_sha1, init_sha256, init_md5 = _get_hashes(
+            event, prefix='InitiatingProcess')
+        if init_sha1:
+            self._make_2level_hash('SHA1', event, origin)
+
+        if init_sha256:
+            self._make_2level_hash('SHA256', event, origin)
+
+        if init_md5:
+            self._make_2level_hash('MD5', event, origin)
+
+        if sha1 and init_sha1:
+            self.relations.append(self._add_relation(
                 origin=origin,
-                relation='File_Name_Of',
-                source={'type': 'file_name',
-                        'value': event['FileName']},
+                relation='Parent_Of',
+                source={'type': 'sha1',
+                        'value': sha1},
                 related={'type': 'sha1',
-                         'value': event['SHA1']}
+                         'value': init_sha1}
             ))
-        if event['SHA256']:
-            relations.append(_add_relation(
+
+        if sha1 and init_sha256:
+            self.relations.append(self._add_relation(
                 origin=origin,
-                relation='File_Name_Of',
-                source={'type': 'file_name',
-                        'value': event['FileName']},
+                relation='Parent_Of',
+                source={'type': 'sha1',
+                        'value': sha1},
                 related={'type': 'sha256',
-                         'value': event['SHA256']}
+                         'value': init_sha256}
             ))
-        else:
-            url = client.format_url(
-                'files', event['SHA1'])
-            res = client.call_api(url)[0]
-            if res is not None:
-                relations.append(_add_relation(
+
+        if sha1 and init_md5:
+            self.relations.append(self._add_relation(
+                origin=origin,
+                relation='Parent_Of',
+                source={'type': 'sha1',
+                        'value': sha1},
+                related={'type': 'md5',
+                         'value': init_md5}
+            ))
+
+        if sha256 and init_sha1:
+            self.relations.append(self._add_relation(
+                origin=origin,
+                relation='Parent_Of',
+                source={'type': 'sha256',
+                        'value': sha256},
+                related={'type': 'sha1',
+                         'value': init_sha1}
+            ))
+
+        if sha256 and init_sha256:
+            self.relations.append(self._add_relation(
+                origin=origin,
+                relation='Parent_Of',
+                source={'type': 'sha256',
+                        'value': sha256},
+                related={'type': 'sha256',
+                         'value': init_sha256}
+            ))
+
+        if sha256 and init_md5:
+            self.relations.append(self._add_relation(
+                origin=origin,
+                relation='Parent_Of',
+                source={'type': 'sha256',
+                        'value': sha256},
+                related={'type': 'md5',
+                         'value': init_md5}
+            ))
+
+        if md5 and init_sha1:
+            self.relations.append(self._add_relation(
+                origin=origin,
+                relation='Parent_Of',
+                source={'type': 'md5',
+                        'value': md5},
+                related={'type': 'sha1',
+                         'value': init_sha1}
+            ))
+
+        if md5 and init_sha256:
+            self.relations.append(self._add_relation(
+                origin=origin,
+                relation='Parent_Of',
+                source={'type': 'md5',
+                        'value': md5},
+                related={'type': 'sha256',
+                         'value': init_sha256}
+            ))
+
+        if md5 and init_md5:
+            self.relations.append(self._add_relation(
+                origin=origin,
+                relation='Parent_Of',
+                source={'type': 'md5',
+                        'value': md5},
+                related={'type': 'md5',
+                         'value': init_md5}
+            ))
+
+        if event['ActionType'] == 'FileRenamed':
+            if event.get('PreviousFileName'):
+                self.relations.append(self._add_relation(
                     origin=origin,
-                    relation='File_Name_Of',
+                    relation='Renamed_To',
                     source={'type': 'file_name',
-                            'value': event['FileName']},
-                    related={'type': 'sha256', 'value': res['sha256']}
+                            'value': event['PreviousFileName']},
+                    related={'type': 'file_name',
+                             'value': event['FileName']}
                 ))
-        if event['MD5']:
-            relations.append(_add_relation(
+
+    def _make_1level_hash(self, type_hash, event, origin):
+        lower_th = type_hash.lower()
+
+        file_name = event['fileName'] if event.get('fileName') \
+            else event.get('FileName')
+        if file_name:
+            self.relations.append(self._add_relation(
                 origin=origin,
                 relation='File_Name_Of',
                 source={'type': 'file_name',
-                        'value': event['FileName']},
-                related={'type': 'md5',
-                         'value': event['MD5']}
+                        'value': file_name},
+                related={'type': lower_th,
+                         'value': event[type_hash]}
             ))
-        if event['FolderPath']:
-            relations.append(_add_relation(
+
+        file_path = event['filePath'] if event.get('filePath') \
+            else event.get('FolderPath')
+        if file_path:
+            self.relations.append(self._add_relation(
                 origin=origin,
                 relation='File_Path_Of',
                 source={'type': 'file_path',
-                        'value': event['FolderPath']},
-                related={'type': 'file_name',
-                         'value': event['FileName']}
+                        'value': file_path},
+                related={'type': lower_th,
+                         'value': event[type_hash]}
             ))
-        if event['FileOriginUrl']:
-            relations.append(_add_relation(
+
+        if event.get('FileOriginUrl'):
+            self.relations.append(self._add_relation(
                 origin=origin,
-                relation='Uploaded_From',
+                relation='Downloaded_From',
                 source={'type': 'url',
                         'value': event['FileOriginUrl']},
-                related={'type': 'file_name',
-                         'value': event['FileName']}
+                related={'type': lower_th,
+                         'value': event[type_hash]}
             ))
-        if event['FileOriginReferrerUrl']:
-            relations.append(_add_relation(
-                origin=origin,
-                relation='Uploaded_From',
-                source={'type': 'url',
-                        'value': event['FileOriginUrl']},
-                related={'type': 'file_name',
-                         'value': event['FileName']}
-            ))
+            if event.get('FileOriginReferrerUrl'):
+                self.relations.append(self._add_relation(
+                    origin=origin,
+                    relation='Refers_To',
+                    source={'type': 'url',
+                            'value': event['FileOriginUrl']},
+                    related={'type': 'url',
+                             'value': event['FileOriginReferrerUrl']}
+                ))
+
+    def _make_2level_hash(self, type_hash, event, origin):
+        upper_th = type_hash.upper()
+        lower_th = type_hash.lower()
         if event['InitiatingProcessFileName']:
-            relations.append(_add_relation(
+            self.relations.append(self._add_relation(
                 origin=origin,
-                relation='Related_To',
+                relation='File_Name_Of',
                 source={'type': 'file_name',
-                        'value': event[
-                            'InitiatingProcessFileName']},
-                related={'type': 'file_name',
-                         'value': event['FileName']}
+                        'value': event['InitiatingProcessFileName']},
+                related={'type': lower_th,
+                         'value': event[f'InitiatingProcess{upper_th}']}
             ))
 
-            if event['InitiatingProcessSHA1']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Name_Of',
-                    source={'type': 'file_name',
-                            'value': event[
-                                'InitiatingProcessFileName']},
-                    related={'type': 'sha1', 'value': event[
-                        'InitiatingProcessSHA1']}
-                ))
-            if event['SHA256']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Name_Of',
-                    source={'type': 'file_name',
-                            'value': event[
-                                'InitiatingProcessFileName']},
-                    related={'type': 'sha256',
-                             'value': event['SHA256']}
-                ))
-            else:
-                url = client.format_url(
-                    'files', event['InitiatingProcessSHA1'])
-                res = client.call_api(url)[0]
-                if res is not None:
-                    relations.append(_add_relation(
-                        origin=origin,
-                        relation='File_Name_Of',
-                        source={'type': 'file_name',
-                                'value': event[
-                                    'InitiatingProcessFileName']},
-                        related={'type': 'sha256', 'value': res['sha256']}
-                    ))
-            if event['InitiatingProcessMD5']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Name_Of',
-                    source={'type': 'file_name',
-                            'value': event[
-                                'InitiatingProcessFileName']},
-                    related={'type': 'md5',
-                             'value': event[
-                                 'InitiatingProcessMD5']}
-                ))
-            if event['InitiatingProcessFolderPath']:
-                relations.append(_add_relation(
-                    origin=origin,
-                    relation='File_Path_Of',
-                    source={'type': 'file_path',
-                            'value': event[
-                                'InitiatingProcessFolderPath']},
-                    related={'type': 'file_name',
-                             'value': event[
-                                 'InitiatingProcessFileName']}
-                ))
             if event['InitiatingProcessParentFileName']:
-                relations.append(_add_relation(
+                self.relations.append(self._add_relation(
                     origin=origin,
-                    relation='Related_To',
+                    relation='Parent_Of',
                     source={'type': 'file_name',
-                            'value': event[
-                                'InitiatingProcessFileName']},
-                    related={
-                        'type': 'file_name',
-                        'value': event[
-                            'InitiatingProcessParentFileName']}
+                            'value': event['InitiatingProcessParentFileName']},
+                    related={'type': lower_th,
+                             'value': event[f'InitiatingProcess{upper_th}']}
                 ))
-    return relations
 
+        if event['InitiatingProcessFolderPath']:
+            self.relations.append(self._add_relation(
+                origin=origin,
+                relation='File_Path_Of',
+                source={'type': 'file_path',
+                        'value': event['InitiatingProcessFolderPath']},
+                related={'type': lower_th,
+                         'value': event[f'InitiatingProcess{upper_th}']}
+            ))
 
-def get_sightings_from_ah(client, event, observable, count):
-    sighting = {
-        'type': 'sighting',
-        'confidence': 'High',
-        'internal': True,
-        'source': 'Microsoft Defender ATP',
-        'sensor': 'endpoint',
-        **CTIM_SCHEMA_VERSION
-    }
+    @lru_cache(maxsize=512)
+    def _get_os_info(self, device_id):
+        """
+        https://docs.microsoft.com/en-us/windows/security/threat-protection
+        /microsoft-defender-atp/get-machine-by-id
 
-    relations = []
-    targets = []
-    if observable['type'] == 'domain':
-        relations = _get_domain(event, client)
-    elif observable['type'] == 'ip':
-        relations = _get_ip(event, client)
-    elif observable['type'] in ('sha1', 'sha256', 'md5'):
-        relations = _get_file(event, client)
+        Queries information about a specific machine and
+        gets the operating system.
+        :param device_id:
+        :return:
+        """
+        url = self.client.format_url('machines', device_id)
+        res = self.client.call_api(url)[0]
 
-    targets.append(_get_target_from_ah(client, event))
+        os = res['osPlatform']
+        if res.get('osProcessor'):
+            os += res['osProcessor']
+        if res.get('version'):
+            os = os + ' version: ' + res['version']
+        return os
 
-    sighting['relations'] = relations
+    @lru_cache(maxsize=512)
+    def _get_network_info(self, device_id):
+        """
+        https://docs.microsoft.com/en-us/windows/security/threat-protection
+        /microsoft-defender-atp/run-advanced-query-api
 
-    sighting['targets'] = targets
+        Queries information about network interface for a specific machine.
+        :param device_id: A device ID
+        :return: <list> - A list of dictionaries consisting of MAC-addresses
+        and IP(IPv6)s or empty list
+        """
 
-    sighting['id'] = f'transient-sighting:{uuid.uuid4()}'
-    sighting['count'] = count
+        observables = []
 
-    sighting['observables'] = [observable, ]
+        query = "DeviceNetworkInfo " \
+                "| where DeviceId == '{device_id}' " \
+                "| summarize (LastTimestamp)=arg_max(Timestamp, ReportId) " \
+                "by DeviceId, " \
+                "NetworkAdapterType, " \
+                "MacAddress, " \
+                "DeviceName, " \
+                "IPAddresses".format(device_id=device_id)
 
-    sighting['observed_time'] = {
-        'start_time': event['Timestamp'],
-        'end_time': event['Timestamp']
-    }
-    return sighting
+        query = json.dumps({'Query': query}).encode('utf-8')
+        response, error = self.client.call_api(
+            self._adv_hunting_url,
+            'POST', data=query)
+
+        if response and response.get('Results'):
+            for item in response['Results']:
+                observables.append(
+                    {'type': 'mac_address', 'value': item['MacAddress']})
+
+                for ips_info in json.loads(item['IPAddresses']):
+                    if ips_info.get('SubnetPrefix') == 64:
+                        observables.append(
+                            {'type': 'ipv6', 'value': ips_info['IPAddress']}
+                        )
+                    elif ips_info.get('SubnetPrefix') == 24:
+                        observables.append(
+                            {'type': 'ip', 'value': ips_info['IPAddress']}
+                        )
+        return observables
+
+    def _get_target_from_alert(self, alert):
+
+        observables = [
+            {'type': 'hostname', 'value': alert['computerDnsName']},
+            {'type': 'device', 'value': alert['machineId']}
+        ]
+
+        os = self._get_os_info(alert['machineId'])
+        networks = self._get_network_info(alert['machineId'])
+        if networks:
+            observables.extend(networks)
+
+        return {
+            'type': 'endpoint',
+            'os': os,
+            'observables': observables,
+            'observed_time': {
+                'start_time': alert['firstEventTime'],
+                'end_time': alert['firstEventTime']
+            }
+        }
+
+    def _get_target_from_ah(self, event):
+
+        observables = [
+            {'type': 'hostname', 'value': event['DeviceName']},
+            {'type': 'device', 'value': event['DeviceId']}
+        ]
+
+        os = self._get_os_info(event['DeviceId'])
+
+        observables.append(
+            {'type': 'mac_address', 'value': event['MacAddress']})
+
+        for ips_info in json.loads(event['IPAddresses']):
+            if ips_info.get('SubnetPrefix') == 64:
+                observables.append(
+                    {'type': 'ipv6', 'value': ips_info['IPAddress']}
+                )
+            elif ips_info.get('SubnetPrefix') == 24:
+                observables.append(
+                    {'type': 'ip', 'value': ips_info['IPAddress']}
+                )
+
+        return {
+            'type': 'endpoint',
+            'os': os,
+            'observables': observables,
+            'observed_time': {
+                'start_time': event['Timestamp'],
+                'end_time': event['Timestamp']
+            }
+        }
+
+    @staticmethod
+    def _get_details(event):
+        columns = []
+        rows = []
+
+        if event.get('ActionType'):
+            columns.append({'name': 'ActionType', 'type': 'string'})
+            rows.append([event['ActionType']], )
+        return {'columns': columns, 'rows': rows}
+
+    def build_sighting_from_ah(self, event):
+        sighting = self.default_sighting.copy()
+
+        targets = []
+        self.relations = []
+
+        if self.observable['type'] in ('domain', 'ip'):
+            self._build_relations_network(event, self.source)
+        elif self.observable['type'] in ('sha1', 'sha256', 'md5'):
+            self._build_relations_file(event, self.source)
+
+        targets.append(self._get_target_from_ah(event))
+
+        sighting['data'] = self._get_details(event)
+
+        sighting['relations'] = self.relations
+
+        sighting['targets'] = targets
+
+        sighting['id'] = f'transient-sighting:{uuid.uuid4()}'
+        sighting['count'] = self.count
+
+        sighting['observables'] = [self.observable, ]
+
+        sighting['observed_time'] = {
+            'start_time': event['Timestamp'],
+            'end_time': event['Timestamp']
+        }
+
+        return sighting
+
+    def build_sighting_from_alert(self, alert):
+        sighting = self.default_sighting.copy()
+
+        targets = []
+        self.relations = []
+
+        if alert['computerDnsName']:
+            targets.append(self._get_target_from_alert(alert))
+
+        sha1 = None
+        sha256 = None
+        md5 = None
+        ip = None
+        url = None
+        url_type = None
+
+        for evidence in alert['evidence']:
+            if evidence.get('entityType') in ('Process', 'File'):
+
+                if evidence.get('sha1') and evidence.get('sha256') \
+                        and evidence.get('md5'):
+                    sha1 = evidence['sha1']
+                    sha256 = evidence['sha256']
+                    md5 = evidence['md5']
+                else:
+                    if evidence.get('sha1') \
+                            and (not evidence.get('sha256')
+                                 or not evidence.get('md5')):
+                        sha1 = evidence['sha1']
+                        _, sha256, md5 = self._call_hashes(sha1)
+
+                    elif evidence.get('sha256') \
+                            and (not evidence.get('sha1')
+                                 or not evidence.get('md5')):
+                        sha256 = evidence['sha256']
+                        sha1, _, md5 = self._call_hashes(sha256)
+
+                    evidence['sha1'] = sha1
+                    evidence['sha256'] = sha256
+                    evidence['md5'] = md5
+
+                if sha1:
+                    self._make_1level_hash(
+                        'sha1',
+                        evidence,
+                        alert['detectionSource']
+                    )
+                if sha256:
+                    self._make_1level_hash(
+                        'sha256',
+                        evidence,
+                        alert['detectionSource']
+                    )
+                if md5:
+                    self._make_1level_hash(
+                        'md5',
+                        evidence,
+                        alert['detectionSource']
+                    )
+
+                if evidence.get('parentProcessId'):
+                    for e in alert['evidence']:
+                        if e['processId'] == evidence['parentProcessId']:
+                            if sha1 and e.get('sha1'):
+                                self.relations.append(
+                                    self._add_relation(
+                                        origin=alert['detectionSource'],
+                                        relation='Injected_Into',
+                                        source={'value': sha1,
+                                                'type': 'sha1'},
+                                        related={'value': e['sha1'],
+                                                 'type': 'sha1'}
+                                    )
+                                )
+                            if sha1 and e.get('sha256'):
+                                self.relations.append(
+                                    self._add_relation(
+                                        origin=alert['detectionSource'],
+                                        relation='Injected_Into',
+                                        source={'value': sha1,
+                                                'type': 'sha1'},
+                                        related={'value': e['sha256'],
+                                                 'type': 'sha256'}
+                                    )
+                                )
+                            if sha256 and e.get('sha1'):
+                                self.relations.append(
+                                    self._add_relation(
+                                        origin=alert['detectionSource'],
+                                        relation='Injected_Into',
+                                        source={'value': sha256,
+                                                'type': 'sha256'},
+                                        related={'value': e['sha1'],
+                                                 'type': 'sha1'}
+                                    )
+                                )
+                            if sha256 and e.get('sha256'):
+                                self.relations.append(
+                                    self._add_relation(
+                                        origin=alert['detectionSource'],
+                                        relation='Injected_Into',
+                                        source={'value': sha256,
+                                                'type': 'sha256'},
+                                        related={'value': e['sha256'],
+                                                 'type': 'sha256'}
+                                    )
+                                )
+
+            if evidence.get('entityType') == 'Ip':
+                ip = evidence.get('ipAddress')
+
+            if evidence.get('entityType') == 'Url':
+                url = evidence.get('url')
+                url_type = self._observable_type4url(url)
+
+            def _make_relations_with_hash(hash_type, hash_value,
+                                          ip_address, url_address,
+                                          url_type=None):
+                if url_address:
+                    self.relations.append(self._add_relation(
+                        origin=alert['detectionSource'],
+                        relation='Connect_To',
+                        source={'type': hash_type,
+                                'value': hash_value},
+                        related={'type': url_type,
+                                 'value': url_address}
+                    ))
+
+                if ip_address:
+                    self.relations.append(self._add_relation(
+                        origin=alert['detectionSource'],
+                        relation='Connect_To',
+                        source={'type': hash_type,
+                                'value': hash_value},
+                        related={'type': 'ip',
+                                 'value': ip_address}
+                    ))
+
+            if url and ip:
+                self.relations.append(self._add_relation(
+                    origin=alert['detectionSource'],
+                    relation='Resolved_To',
+                    source={'type': url_type,
+                            'value': url},
+                    related={'type': 'ip',
+                             'value': ip}
+                ))
+
+            if sha1:
+                _make_relations_with_hash('sha1', sha1, ip,
+                                          url, url_type)
+            if sha256:
+                _make_relations_with_hash('sha256', sha256, ip,
+                                          url, url_type)
+            if md5:
+                _make_relations_with_hash('md5', md5, ip,
+                                          url, url_type)
+
+        sighting['targets'] = targets
+        sighting['relations'] = self.relations
+
+        sighting['id'] = f'transient-sighting:{uuid.uuid4()}'
+        sighting['count'] = self.count
+        sighting['observables'] = [self.observable, ]
+        sighting['observed_time'] = {
+            'start_time': alert['firstEventTime'],
+            'end_time': alert['firstEventTime']
+        }
+        sighting['title'] = alert['title']
+        sighting['description'] = alert['description']
+        sighting['severity'] = SEVERITY.get(alert['severity'], None)
+        sighting['timestamp'] = alert['lastUpdateTime']
+        sighting['source_uri'] = \
+            'https://securitycenter.windows.com/alerts' \
+            '/{alert_id}/details'.format(alert_id=alert['id'])
+
+        return sighting

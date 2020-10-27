@@ -2,12 +2,12 @@ import requests
 from flask import current_app
 from http import HTTPStatus
 
-from .errors import (CTRInvalidCredentialsError,
-                     CTRInvalidJWTError,
+from .errors import (CTRInvalidJWTError,
                      CTRBadRequestError,
                      CTRUnexpectedResponseError,
                      CTRInternalServerError,
-                     CTRTooManyRequestsError)
+                     CTRTooManyRequestsError,
+                     CTRSSLError, AuthorizationError)
 
 
 class Client:
@@ -28,30 +28,35 @@ class Client:
             url = url + path
         return url
 
-    def call_api(self, url, method='GET', data=None):
+    def call_api(self, url, method='GET', params=None, data=None):
         error = None
         result = None
 
         if not self.session.headers.get('Authorization'):
             self._auth()
 
-        if method == 'POST':
-            response = self.session.post(url, data=data)
-        else:
-            response = self.session.get(url)
+        try:
+            if method == 'POST':
+                response = self.session.post(url, params=params, data=data)
+            elif method == 'DELETE':
+                response = self.session.delete(url)
+            else:
+                response = self.session.get(url, params=params)
+        except requests.exceptions.SSLError as ex:
+            raise CTRSSLError(ex)
 
-        if not response.ok:
+        if response.ok:
+            if response.status_code == HTTPStatus.OK:
+                result = response.json()
+        else:
             if response.status_code == HTTPStatus.UNAUTHORIZED:
-                self._auth()
-                self.call_api(method, data)
+                raise AuthorizationError(str(response.json()['error']))
             elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-                raise CTRTooManyRequestsError
+                raise CTRTooManyRequestsError(response)
             elif response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR:
                 raise CTRInternalServerError
             else:
                 error = str(response.json()['error'])
-        else:
-            result = response.json()
         return result, error
 
     def _set_headers(self, response):
@@ -73,13 +78,13 @@ class Client:
 
         body = {
             'resource': current_app.config['API_HOST'],
-            'client_id': self.credentials.get('client_id', ''),
-            'client_secret': self.credentials.get('client_secret', ''),
+            'client_id': self.credentials['client_id'],
+            'client_secret': self.credentials['client_secret'],
             'grant_type': 'client_credentials'
         }
 
         url = current_app.config['AUTH_URL'].format(
-            tenant_id=self.credentials.get('tenant_id', '')
+            tenant_id=self.credentials['tenant_id']
         )
         response = self.session.get(
             url,
@@ -92,7 +97,12 @@ class Client:
 
         elif response.status_code in (HTTPStatus.UNAUTHORIZED,
                                       HTTPStatus.BAD_REQUEST):
-            raise CTRInvalidCredentialsError()
+            raise AuthorizationError(
+                str(response.json().get(
+                    'error_description',
+                    'on Microsoft Defender ATP side'
+                ))
+            )
         elif response.status_code == HTTPStatus.NOT_FOUND:
             raise CTRInvalidJWTError()
         raise CTRUnexpectedResponseError(response.json())
