@@ -17,7 +17,7 @@ SEVERITY = {
 
 
 CTIM_SCHEMA_VERSION = {
-    'schema_version': '1.0.17',
+    'schema_version': current_app.config['CTIM_SCHEMA_VERSION'],
 }
 
 
@@ -419,11 +419,11 @@ class Mapping:
                     {'type': 'mac_address', 'value': item['MacAddress']})
 
                 for ips_info in json.loads(item['IPAddresses']):
-                    if ips_info.get('SubnetPrefix') == 64:
+                    if ':' in ips_info['IPAddress']:
                         observables.append(
                             {'type': 'ipv6', 'value': ips_info['IPAddress']}
                         )
-                    elif ips_info.get('SubnetPrefix') == 24:
+                    elif '.' in ips_info['IPAddress']:
                         observables.append(
                             {'type': 'ip', 'value': ips_info['IPAddress']}
                         )
@@ -433,7 +433,8 @@ class Mapping:
 
         observables = [
             {'type': 'hostname', 'value': alert['computerDnsName']},
-            {'type': 'device', 'value': alert['machineId']}
+            {'type': 'ms_machine_id', 'value': alert['machineId']}
+            # {'type': 'device', 'value': alert['machineId']}
         ]
 
         os = self._get_os_info(alert['machineId'])
@@ -455,7 +456,8 @@ class Mapping:
 
         observables = [
             {'type': 'hostname', 'value': event['DeviceName']},
-            {'type': 'device', 'value': event['DeviceId']}
+            {'type': 'ms_machine_id', 'value': event['DeviceId']}
+            # {'type': 'device', 'value': event['DeviceId']}
         ]
 
         os = self._get_os_info(event['DeviceId'])
@@ -464,11 +466,11 @@ class Mapping:
             {'type': 'mac_address', 'value': event['MacAddress']})
 
         for ips_info in json.loads(event['IPAddresses']):
-            if ips_info.get('SubnetPrefix') == 64:
+            if ':' in ips_info['IPAddress']:
                 observables.append(
                     {'type': 'ipv6', 'value': ips_info['IPAddress']}
                 )
-            elif ips_info.get('SubnetPrefix') == 24:
+            elif '.' in ips_info['IPAddress']:
                 observables.append(
                     {'type': 'ip', 'value': ips_info['IPAddress']}
                 )

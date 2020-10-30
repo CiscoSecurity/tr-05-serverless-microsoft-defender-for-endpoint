@@ -86,7 +86,7 @@ def test_respond_observables_success(call_api, route, client, valid_jwt):
 
 @mock.patch('api.client.Client.call_api')
 def test_respond_target_success(call_api, route, client, valid_jwt):
-    valid_json = [{'type': 'device',
+    valid_json = [{'type': 'ms_machine_id',
                    'value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'}]
 
     call_api.side_effect = (
@@ -110,7 +110,7 @@ def test_respond_target_success(call_api, route, client, valid_jwt):
 
 @mock.patch('api.client.Client.call_api')
 def test_respond_target_unisolate(call_api, route, client, valid_jwt):
-    valid_json = [{'type': 'device',
+    valid_json = [{'type': 'ms_machine_id',
                    'value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'}]
 
     call_api.side_effect = (
@@ -125,13 +125,13 @@ def test_respond_target_unisolate(call_api, route, client, valid_jwt):
 
     exp = {
         'categories': ['Microsoft Defender ATP', 'Machine Actions'],
-        'description': 'Release device from isolation',
+        'description': 'Release from isolation',
         'id': 'microsoft-defender-atp-Unisolate',
         'query-params': {
-            'observable_type': 'device',
+            'observable_type': 'ms_machine_id',
             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
         },
-        'title': 'Release device from isolation'
+        'title': 'Release from isolation'
     }
 
     assert response.status_code == HTTPStatus.OK
@@ -141,7 +141,7 @@ def test_respond_target_unisolate(call_api, route, client, valid_jwt):
 @mock.patch('api.client.Client.call_api')
 def test_respond_target_unrestrict_code_execution(call_api, route,
                                                   client, valid_jwt):
-    valid_json = [{'type': 'device',
+    valid_json = [{'type': 'ms_machine_id',
                    'value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'}]
 
     call_api.side_effect = (
@@ -156,13 +156,13 @@ def test_respond_target_unrestrict_code_execution(call_api, route,
 
     exp = {
         'categories': ['Microsoft Defender ATP', 'Machine Actions'],
-        'description': 'Remove app restriction',
+        'description': 'Remove app restrictions',
         'id': 'microsoft-defender-atp-UnrestrictCodeExecution',
         'query-params': {
-            'observable_type': 'device',
+            'observable_type': 'ms_machine_id',
             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
         },
-        'title': 'Remove app restriction'
+        'title': 'Remove app restrictions'
     }
 
     assert response.status_code == HTTPStatus.OK
@@ -171,7 +171,7 @@ def test_respond_target_unrestrict_code_execution(call_api, route,
 
 @mock.patch('api.client.Client.call_api')
 def test_respond_target_failure(call_api, route, client, valid_jwt):
-    valid_json = [{'type': 'device',
+    valid_json = [{'type': 'ms_machine_id',
                    'value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'}]
 
     call_api.side_effect = (

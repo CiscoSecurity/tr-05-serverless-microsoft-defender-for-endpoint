@@ -870,9 +870,9 @@ AH_RESPONSE = {
 EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
     'data': [
         {
-            'categories': ['Defender ATP', 'Add Indicator'],
+            'categories': ['Microsoft Defender ATP', 'Add Indicator'],
             'description': 'Add indicator with Alert action for asdf.com',
-            'id': 'defender-add-indicator-alert',
+            'id': 'microsoft-defender-atp-add-indicator-alert',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
@@ -880,10 +880,10 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
             'title': 'Add indicator: Alert'
         },
         {
-            'categories': ['Defender ATP', 'Add Indicator'],
+            'categories': ['Microsoft Defender ATP', 'Add Indicator'],
             'description': 'Add indicator with Alert and Block action '
                            'for asdf.com',
-            'id': 'defender-add-indicator-alert-and-block',
+            'id': 'microsoft-defender-atp-add-indicator-alert-and-block',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
@@ -891,9 +891,9 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
             'title': 'Add indicator: Alert and Block'
         },
         {
-            'categories': ['Defender ATP', 'Add Indicator'],
+            'categories': ['Microsoft Defender ATP', 'Add Indicator'],
             'description': 'Add indicator with Allow action for asdf.com',
-            'id': 'defender-add-indicator-allowed',
+            'id': 'microsoft-defender-atp-add-indicator-allowed',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
@@ -999,55 +999,76 @@ HISTORY_MACHINE_ACTIONS_RESPONSE_RESTRICT_CODE_EXECUTION = {
 
 EXPECTED_RESPONSE_RESPOND_TARGET = {
     'data': [
-        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
-         'description': 'Full isolation',
-         'id': 'microsoft-defender-atp-FullIsolation',
-         'query-params': {
-             'observable_type': 'device',
-             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
-         'title': 'Full isolation'},
-        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
-         'description': 'Run full antivirus scan',
-         'id': 'microsoft-defender-atp-RunFullAntiVirusScan',
-         'query-params': {
-             'observable_type': 'device',
-             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
-         'title': 'Run full antivirus scan'},
-        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
-         'description': 'Restrict app execution',
-         'id': 'microsoft-defender-atp-RestrictCodeExecution',
-         'query-params': {
-             'observable_type': 'device',
-             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
-         'title': 'Restrict app execution'},
-        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
-         'description': 'Initiate automated investigation',
-         'id': 'microsoft-defender-atp-InitiateInvestigation',
-         'query-params': {
-             'observable_type': 'device',
-             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
-         'title': 'Initiate automated investigation'},
-        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
-         'description': 'Collect investigation package',
-         'id': 'microsoft-defender-atp-CollectInvestigationPackage',
-         'query-params': {
-             'observable_type': 'device',
-             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
-         'title': 'Collect investigation package'},
-        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
-         'description': 'Selective isolation',
-         'id': 'microsoft-defender-atp-SelectiveIsolation',
-         'query-params': {
-             'observable_type': 'device',
-             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
-         'title': 'Selective isolation'},
-        {'categories': ['Microsoft Defender ATP', 'Machine Actions'],
-         'description': 'Run quick antivirus scan',
-         'id': 'microsoft-defender-atp-RunQuickAntiVirusScan',
-         'query-params': {
-             'observable_type': 'device',
-             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
-         'title': 'Run quick antivirus scan'}
+        {
+            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'description': 'Collect investigation package',
+            'id': 'microsoft-defender-atp-CollectInvestigationPackage',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Collect investigation package'
+        },
+        {
+            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'description': 'Isolate Device: Full',
+            'id': 'microsoft-defender-atp-FullIsolation',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Isolate Device: Full'
+        },
+        {
+            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'description': 'Initiate automated investigation',
+            'id': 'microsoft-defender-atp-InitiateInvestigation',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Initiate automated investigation'
+        },
+        {
+            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'description': 'Restrict app execution',
+            'id': 'microsoft-defender-atp-RestrictCodeExecution',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Restrict app execution'
+        },
+        {
+            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'description': 'Run antivirus scan: Full',
+            'id': 'microsoft-defender-atp-RunAntiVirusScanFull',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Run antivirus scan: Full'
+        },
+        {
+            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'description': 'Run antivirus scan: Quick',
+            'id': 'microsoft-defender-atp-RunAntiVirusScanQuick',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Run antivirus scan: Quick'
+        },
+        {
+            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'description': 'Isolate Device: Selective',
+            'id': 'microsoft-defender-atp-SelectiveIsolation',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Isolate Device: Selective'
+        }
     ]
 }
 

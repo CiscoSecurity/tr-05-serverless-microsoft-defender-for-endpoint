@@ -15,7 +15,7 @@ class Config:
     BASE_URL = f'{API_HOST}/api/{API_VERSION}'
     API_URL = BASE_URL + '/{entity}/{value}'
     ADVANCED_HUNTING_URL = f'{BASE_URL}/advancedqueries/run'
-    SUBMIT_INDICATOR_URL = f'{BASE_URL}/indicators'
+    INDICATOR_URL = f'{BASE_URL}/indicators'
     SECURITY_CENTER_URL = 'https://securitycenter.windows.com'
 
     MD_ATP_OBSERVABLE_TYPES = {
@@ -25,7 +25,7 @@ class Config:
         'ip': 'IP',
         'ipv6': 'IPV6',
         'domain': 'Domain',
-        'device': 'device'
+        'ms_machine_id': 'ms_machine_id'
     }
 
     CTIM_SCHEMA_VERSION = '1.0.17'

@@ -129,7 +129,7 @@ def test_respond_trigger_api_return_400(api_response, route,
     api_response.return_value = Session
 
     valid_json = {
-        'action-id': 'defender-add-indicator-alert',
+        'action-id': 'microsoft-defender-atp-add-indicator-alert',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }
@@ -161,7 +161,7 @@ def test_respond_trigger_api_return_400(api_response, route,
 def test_respond_trigger_success(call_api, route, client, valid_jwt):
 
     valid_json = {
-        'action-id': 'defender-add-indicator-alert',
+        'action-id': 'microsoft-defender-atp-add-indicator-alert',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }
@@ -189,7 +189,7 @@ def test_respond_trigger_target_success(call_api, route, client, valid_jwt):
 
     valid_json = {
         'action-id': 'microsoft-defender-atp-Unisolate',
-        'observable_type': 'device',
+        'observable_type': 'ms_machine_id',
         'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
     }
 
