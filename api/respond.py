@@ -148,7 +148,6 @@ def respond_observables():
                         'observable_value': observable['value']}
 
         if observable['type'] == 'ms_machine_id':
-        # if observable['type'] == 'device':
 
             _actions = get_supported_actions(client, observable['value'])
             _actions = get_reverse_actions(client,
@@ -267,7 +266,6 @@ def respond_trigger():
                   'by the UI or API response actions'
 
     if data['observable_type'] == 'ms_machine_id':
-    # if data['observable_type'] == 'device':
         comment = 'Performed via SecureX Threat Response'
 
         actions = {

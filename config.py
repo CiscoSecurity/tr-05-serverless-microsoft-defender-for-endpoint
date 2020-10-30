@@ -28,8 +28,6 @@ class Config:
         'ms_machine_id': 'ms_machine_id'
     }
 
-    CTIM_SCHEMA_VERSION = '1.0.17'
-
     CTR_HEADERS = {
         'User-Agent': 'Cisco-CiscoThreatResponseMicrosoftDefenderATP/1.0.0'
     }

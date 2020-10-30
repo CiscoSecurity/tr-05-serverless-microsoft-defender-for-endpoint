@@ -17,7 +17,7 @@ SEVERITY = {
 
 
 CTIM_SCHEMA_VERSION = {
-    'schema_version': current_app.config['CTIM_SCHEMA_VERSION'],
+    'schema_version': '1.0.17',
 }
 
 

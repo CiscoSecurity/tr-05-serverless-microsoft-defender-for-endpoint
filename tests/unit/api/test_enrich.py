@@ -87,7 +87,8 @@ def test_enrich_call_success(call_api, route, client, valid_jwt,
         {'type': 'mac_address', 'value': '00224843C030'},
         {'type': 'ip', 'value': '10.1.1.68'},
         {'type': 'ipv6', 'value': 'fe80::6d25:8926:20c3:49ea'},
-        {'type': 'ms_machine_id', 'value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'}
+        {'type': 'ms_machine_id',
+         'value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'}
     ]
 
     call_api.side_effect = [
