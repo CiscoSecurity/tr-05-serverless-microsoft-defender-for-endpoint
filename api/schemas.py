@@ -46,6 +46,7 @@ OBSERVABLE_TYPE_CHOICES = (
     'registry_key',
     'registry_name',
     'registry_path',
+    's1_agent_id',
     'sha1',
     'sha256',
     'url',
