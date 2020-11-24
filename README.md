@@ -1,10 +1,10 @@
 [![Gitter Chat](https://img.shields.io/badge/gitter-join%20chat-brightgreen.svg)](https://gitter.im/CiscoSecurity/Threat-Response "Gitter Chat")
 [![Travis CI Build Status](https://travis-ci.com/CiscoSecurity/tr-05-serverless-microsoft-defender-atp.svg?branch=develop)](https://travis-ci.com/CiscoSecurity/tr-05-serverless-microsoft-defender-atp)
 
-# Microsoft Defender ATP Relay
+# Microsoft Defender for Endpoint Relay
 
 Concrete Relay implementation using
-[Microsoft Defender ATP](https://www.microsoft.com/en-us/microsoft-365/windows/microsoft-defender-atp)
+[Microsoft Defender for Endpoint](https://www.microsoft.com/en-us/microsoft-365/windows/microsoft-defender-atp)
 as a third-party Cyber Threat Intelligence service provider.
 
 The Relay itself is just a simple application written in Python that can be
@@ -344,15 +344,15 @@ and [Advanced Hunting API](https://docs.microsoft.com/en-us/windows/security/thr
 The fields match, for example, `description` in a Sighting and `description` an alert. 
 
 Each `Sighting` for a supported observable is based on a matching alert or event from the Advanced Hunting API
-which happened on one of the machines that were added to the monitoring of Microsoft Defender ATP. 
+which happened on one of the machines that were added to the monitoring of Microsoft Defender for Endpoint. 
 Alerts and events from the Advanced Hunting API have different response structures. 
 Events depend on the types of observable and the differences between them. 
 
 Steps performed when interacting with the service:
-  1. We make a request to receive Defender ATP alerts.
+  1. We make a request to receive Defender for Endpoint alerts.
   2. If the number of alerts is fewer than the value of the `CTR_ENTITIES_LIMIT` variable then we make a request to the Advanced Hunting API.
-  3. For each alert we get additional information by making a request to the [Defender ATP endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id) and the Advanced Hunting API.
-  4. When processing events we make a request to [Defender ATP endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id) to receive additional information.
+  3. For each alert we get additional information by making a request to the [Defender for Endpoint endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id) and the Advanced Hunting API.
+  4. When processing events we make a request to [Defender for Endpoint endpoint](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/get-machine-by-id) to receive additional information.
 
 There are examples of mapping fields for alerts below:
 
