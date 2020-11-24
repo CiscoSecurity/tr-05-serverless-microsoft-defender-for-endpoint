@@ -74,10 +74,11 @@ def test_refer_observables_success(route, client, valid_jwt, valid_json):
             {
                 "categories": [
                     "Search",
-                    "Microsoft Defender ATP"
+                    "Microsoft Defender for Endpoint"
                 ],
-                "description": "Lookup this SHA1 on Microsoft Defender ATP",
-                "id": "ref-mdatp-search-"
+                "description":
+                    "Lookup this SHA1 on Microsoft Defender for Endpoint",
+                "id": "ref-md-search-"
                       "sha1-0d549631690ea297c25b2a4e133cacb8a87b97c6",
                 "title": "Search for this SHA1",
                 "url": "https://securitycenter.windows.com"
@@ -86,20 +87,22 @@ def test_refer_observables_success(route, client, valid_jwt, valid_json):
             {
                 "categories": [
                     "Search",
-                    "Microsoft Defender ATP"
+                    "Microsoft Defender for Endpoint"
                 ],
-                "description": "Lookup this Domain on Microsoft Defender ATP",
-                "id": "ref-mdatp-search-domain-asdf.com",
+                "description":
+                    "Lookup this Domain on Microsoft Defender for Endpoint",
+                "id": "ref-md-search-domain-asdf.com",
                 "title": "Search for this Domain",
                 "url": "https://securitycenter.windows.com/urls/asdf.com"
             },
             {
                 "categories": [
                     "Search",
-                    "Microsoft Defender ATP"
+                    "Microsoft Defender for Endpoint"
                 ],
-                "description": "Lookup this IP on Microsoft Defender ATP",
-                "id": "ref-mdatp-search-ip-1.1.1.1",
+                "description":
+                    "Lookup this IP on Microsoft Defender for Endpoint",
+                "id": "ref-md-search-ip-1.1.1.1",
                 "title": "Search for this IP",
                 "url": "https://securitycenter.windows.com/ips/1.1.1.1"
             }
