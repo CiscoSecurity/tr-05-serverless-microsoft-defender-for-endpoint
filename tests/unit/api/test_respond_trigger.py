@@ -94,8 +94,8 @@ def test_respond_trigger_unsupported_action_id(route, client, valid_jwt):
         'errors': [
             {
                 'code': 'invalid request',
-                'message': 'Invalid request to Microsoft Defender ATP. '
-                           'Unsupported action.',
+                'message': 'Invalid request to Microsoft Defender for '
+                           'Endpoint. Unsupported action.',
                 'type': 'fatal'
             }
         ]
@@ -146,8 +146,8 @@ def test_respond_trigger_api_return_400(api_response, route,
         'errors': [
             {
                 'code': 'invalid request',
-                'message': 'Invalid request to Microsoft Defender ATP. '
-                           'It is a bad request',
+                'message': 'Invalid request to Microsoft Defender for '
+                           'Endpoint. It is a bad request',
                 'type': 'fatal'
             }
         ]

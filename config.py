@@ -27,10 +27,11 @@ class Config:
         'domain': 'Domain'
     }
 
-    CTIM_SCHEMA_VERSION = '1.0.17'
+    CTIM_SCHEMA_VERSION = '1.0.22'
 
     CTR_HEADERS = {
-        'User-Agent': 'Cisco-CiscoThreatResponseMicrosoftDefenderATP/1.0.0'
+        'User-Agent':
+            'Cisco-CiscoThreatResponseMicrosoftDefenderForEndpoint/1.0.0'
     }
 
     CTR_DEFAULT_ENTITIES_LIMIT = 100

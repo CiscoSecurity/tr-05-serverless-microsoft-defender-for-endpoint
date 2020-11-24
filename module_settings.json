@@ -1,5 +1,5 @@
 {
-  "name": "Microsoft Defender ATP",
+  "name": "Microsoft Defender for Endpoint",
   "jwt": {
     "client_id": "Application ID",
     "client_secret": "Client Secret",
