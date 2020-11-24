@@ -27,7 +27,7 @@ class Config:
         'domain': 'Domain'
     }
 
-    CTIM_SCHEMA_VERSION = '1.0.17'
+    CTIM_SCHEMA_VERSION = '1.0.22'
 
     CTR_HEADERS = {
         'User-Agent':
