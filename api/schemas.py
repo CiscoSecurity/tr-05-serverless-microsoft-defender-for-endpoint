@@ -35,6 +35,7 @@ OBSERVABLE_TYPE_CHOICES = (
     'ipv6',
     'mac_address',
     'md5',
+    'ms_machine_id',
     'mutex',
     'ngfw_id',
     'ngfw_name',

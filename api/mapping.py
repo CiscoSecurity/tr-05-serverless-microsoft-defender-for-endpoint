@@ -26,7 +26,7 @@ class Mapping:
         self.client = client
         self.observable = observable
         self.count = count
-        self.source = 'Microsoft Defender ATP'
+        self.source = 'Microsoft Defender for Endpoint'
         self.default_sighting = {
                 'type': 'sighting',
                 'confidence': 'High',

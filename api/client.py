@@ -100,7 +100,7 @@ class Client:
             raise AuthorizationError(
                 str(response.json().get(
                     'error_description',
-                    'on Microsoft Defender ATP side'
+                    'on Microsoft Defender for Endpoint side'
                 ))
             )
         elif response.status_code == HTTPStatus.NOT_FOUND:

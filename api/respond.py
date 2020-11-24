@@ -158,13 +158,13 @@ def respond_observables():
             for item in _actions:
                 action = {}
                 action['id'] = \
-                    f'microsoft-defender-atp-{_TR_SUPPORTED_ACTIONS[item]}'
+                    f'microsoft-defender-{_TR_SUPPORTED_ACTIONS[item]}'
 
                 action['title'] = item
                 action['description'] = item
 
                 action['categories'] = [
-                    'Microsoft Defender ATP',
+                    'Microsoft Defender for Endpoint',
                     'Machine Actions'
                 ]
                 action['query-params'] = query_params
@@ -188,7 +188,7 @@ def respond_observables():
                 query_params['indicator_id'] = obj['id']
                 actions = [
                     {
-                        'id': 'microsoft-defender-atp-remove-indicator',
+                        'id': 'microsoft-defender-remove-indicator',
                         'title': 'Remove indicator: {action} - {title}'.format(
                             action=human_action,
                             title=obj['title']
@@ -196,7 +196,7 @@ def respond_observables():
                         'description': f'Remove indicator with {human_action} '
                                        f'action for {observable["value"]}',
                         'categories': [
-                            'Microsoft Defender ATP',
+                            'Microsoft Defender for Endpoint',
                             'Remove Indicator'
                         ],
                         'query-params': query_params
@@ -205,36 +205,36 @@ def respond_observables():
             else:
                 actions = [
                     {
-                        'id': 'microsoft-defender-atp-add-indicator-alert',
+                        'id': 'microsoft-defender-add-indicator-alert',
                         'title': 'Add indicator: Alert',
                         'description': f'Add indicator with Alert action '
                                        f'for {observable["value"]}',
                         'categories': [
-                            'Microsoft Defender ATP',
+                            'Microsoft Defender for Endpoint',
                             'Add Indicator'
                         ],
                         'query-params': query_params
                     },
                     {
-                        'id': 'microsoft-defender-atp-'
+                        'id': 'microsoft-defender-'
                               'add-indicator-alert-and-block',
                         'title': 'Add indicator: Alert and Block',
                         'description': f'Add indicator with '
                                        f'Alert and Block action'
                                        f' for {observable["value"]}',
                         'categories': [
-                            'Microsoft Defender ATP',
+                            'Microsoft Defender for Endpoint',
                             'Add Indicator'
                         ],
                         'query-params': query_params
                     },
                     {
-                        'id': 'microsoft-defender-atp-add-indicator-allowed',
+                        'id': 'microsoft-defender-add-indicator-allowed',
                         'title': 'Add indicator: Allow',
                         'description': f'Add indicator with Allow action '
                                        f'for {observable["value"]}',
                         'categories': [
-                            'Microsoft Defender ATP',
+                            'Microsoft Defender for Endpoint',
                             'Add Indicator'
                         ],
                         'query-params': query_params
@@ -269,28 +269,28 @@ def respond_trigger():
         comment = 'Performed via SecureX Threat Response'
 
         actions = {
-            'microsoft-defender-atp-FullIsolation': {
+            'microsoft-defender-FullIsolation': {
                 'url': '{base_url}/machines/{machine_id}/isolate'.format(
                     base_url=current_app.config['BASE_URL'],
                     machine_id=data['observable_value']),
                 'method': 'POST',
                 'data': {'Comment': comment, 'IsolationType': 'Full'}
             },
-            'microsoft-defender-atp-SelectiveIsolation': {
+            'microsoft-defender-SelectiveIsolation': {
                 'url': '{base_url}/machines/{machine_id}/isolate'.format(
                     base_url=current_app.config['BASE_URL'],
                     machine_id=data['observable_value']),
                 'method': 'POST',
                 'data': {'Comment': comment, 'IsolationType': 'Selective'}
             },
-            'microsoft-defender-atp-Unisolate': {
+            'microsoft-defender-Unisolate': {
                 'url': '{base_url}/machines/{machine_id}/unisolate'.format(
                     base_url=current_app.config['BASE_URL'],
                     machine_id=data['observable_value']),
                 'method': 'POST',
                 'data': {'Comment': comment}
             },
-            'microsoft-defender-atp-RestrictCodeExecution': {
+            'microsoft-defender-RestrictCodeExecution': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/restrictCodeExecution'.format(
                         base_url=current_app.config['BASE_URL'],
@@ -298,7 +298,7 @@ def respond_trigger():
                 'method': 'POST',
                 'data': {'Comment': comment}
             },
-            'microsoft-defender-atp-UnrestrictCodeExecution': {
+            'microsoft-defender-UnrestrictCodeExecution': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/unrestrictCodeExecution'.format(
                         base_url=current_app.config['BASE_URL'],
@@ -306,7 +306,7 @@ def respond_trigger():
                 'method': 'POST',
                 'data': {'Comment': comment}
             },
-            'microsoft-defender-atp-RunAntiVirusScanQuick': {
+            'microsoft-defender-RunAntiVirusScanQuick': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/runAntiVirusScan'.format(
                         base_url=current_app.config['BASE_URL'],
@@ -314,7 +314,7 @@ def respond_trigger():
                 'method': 'POST',
                 'data': {'Comment': comment, 'ScanType': 'Quick'}
             },
-            'microsoft-defender-atp-RunAntiVirusScanFull': {
+            'microsoft-defender-RunAntiVirusScanFull': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/runAntiVirusScan'.format(
                         base_url=current_app.config['BASE_URL'],
@@ -322,7 +322,7 @@ def respond_trigger():
                 'method': 'POST',
                 'data': {'Comment': comment, 'ScanType': 'Full'}
             },
-            'microsoft-defender-atp-CollectInvestigationPackage': {
+            'microsoft-defender-CollectInvestigationPackage': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/collectInvestigationPackage'.format(
                         base_url=current_app.config['BASE_URL'],
@@ -330,7 +330,7 @@ def respond_trigger():
                 'method': 'POST',
                 'data': {'Comment': comment}
             },
-            'microsoft-defender-atp-InitiateInvestigation': {
+            'microsoft-defender-InitiateInvestigation': {
                 'url': '{base_url}/machines/{machine_id}'
                        '/startInvestigation'.format(
                         base_url=current_app.config['BASE_URL'],
@@ -342,7 +342,7 @@ def respond_trigger():
 
     else:
         actions = {
-            'microsoft-defender-atp-add-indicator-alert': {
+            'microsoft-defender-add-indicator-alert': {
                 'url': current_app.config['INDICATOR_URL'],
                 'method': 'POST',
                 'data': {
@@ -354,7 +354,7 @@ def respond_trigger():
                     'severity': 'High'
                 }
             },
-            'microsoft-defender-atp-add-indicator-alert-and-block': {
+            'microsoft-defender-add-indicator-alert-and-block': {
                 'url': current_app.config['INDICATOR_URL'],
                 'method': 'POST',
                 'data': {
@@ -366,7 +366,7 @@ def respond_trigger():
                     'severity': 'High'
                 }
             },
-            'microsoft-defender-atp-add-indicator-allowed': {
+            'microsoft-defender-add-indicator-allowed': {
                 'url': current_app.config['INDICATOR_URL'],
                 'method': 'POST',
                 'data': {
@@ -377,7 +377,8 @@ def respond_trigger():
                     'description': description
                 }
             },
-            'microsoft-defender-atp-remove-indicator': {
+            'microsoft-defender'
+            '-remove-indicator': {
                 'url': current_app.config['INDICATOR_URL'] + '/' + str(
                     data.get('indicator_id', '')),
                 'method': 'DELETE',

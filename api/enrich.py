@@ -1,15 +1,16 @@
 import json
-from os import cpu_count
-from functools import partial
-from flask import Blueprint, current_app, g
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
+from os import cpu_count
 
+from flask import Blueprint, current_app, g
+
+from api.client import Client
+from api.errors import CTRBadRequestError
+from api.mapping import Mapping
 from api.schemas import ObservableSchema
 from api.utils import (get_json, get_jwt, jsonify_data, jsonify_errors,
                        group_observables, format_docs)
-from api.errors import CTRBadRequestError
-from api.client import Client
-from api.mapping import Mapping
 
 enrich_api = Blueprint('enrich', __name__)
 
@@ -188,9 +189,10 @@ def refer_observables():
         title = 'Search for this {o_type}'.format(
             o_type=current_app.config["MD_ATP_OBSERVABLE_TYPES"][o_type]
         )
-        description = 'Lookup this {o_type} on Microsoft Defender ATP'.format(
-            o_type=current_app.config['MD_ATP_OBSERVABLE_TYPES'][o_type]
-        )
+        description = \
+            'Lookup this {o_type} on Microsoft Defender for Endpoint'.format(
+                o_type=current_app.config['MD_ATP_OBSERVABLE_TYPES'][o_type]
+            )
         url = '{host}/{entity}/{o_value}'.format(
             host=current_app.config['SECURITY_CENTER_URL'],
             entity=entity,
@@ -199,11 +201,11 @@ def refer_observables():
 
         data.append(
             {
-                'id': f'ref-mdatp-search-{o_type}-{o_value}',
+                'id': f'ref-md-search-{o_type}-{o_value}',
                 'title': title,
                 'description': description,
                 'url': url,
-                'categories': ['Search', 'Microsoft Defender ATP']
+                'categories': ['Search', 'Microsoft Defender for Endpoint']
             }
         )
 

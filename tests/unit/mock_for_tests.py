@@ -520,7 +520,7 @@ EXPECTED_RESPONSE_500_ERROR = {
     "errors": [
         {
             "code": "internal error",
-            "message": "Microsoft Defender ATP internal error.",
+            "message": "Microsoft Defender for Endpoint internal error.",
             "type": "fatal"
         }
     ]
@@ -531,7 +531,7 @@ EXPECTED_RESPONSE_429_ERROR = {
     "errors": [
         {
             "code": "too many requests",
-            "message": "Too many requests to Microsoft Defender ATP "
+            "message": "Too many requests to Microsoft Defender for Endpoint "
                        "have been made. Please, try again later.",
             "type": "fatal"
         }
@@ -543,7 +543,7 @@ EXPECTED_RESPONSE_400_ERROR = {
     "errors": [
         {
             "code": "invalid request",
-            "message": "Invalid request to Microsoft Defender ATP. "
+            "message": "Invalid request to Microsoft Defender for Endpoint. "
                        "Access Token does not exist.",
             "type": "fatal"
         }
@@ -870,9 +870,9 @@ AH_RESPONSE = {
 EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
     'data': [
         {
-            'categories': ['Microsoft Defender ATP', 'Add Indicator'],
+            'categories': ['Microsoft Defender for Endpoint', 'Add Indicator'],
             'description': 'Add indicator with Alert action for asdf.com',
-            'id': 'microsoft-defender-atp-add-indicator-alert',
+            'id': 'defender-add-indicator-alert',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
@@ -880,10 +880,10 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
             'title': 'Add indicator: Alert'
         },
         {
-            'categories': ['Microsoft Defender ATP', 'Add Indicator'],
+            'categories': ['Microsoft Defender for Endpoint', 'Add Indicator'],
             'description': 'Add indicator with Alert and Block action '
                            'for asdf.com',
-            'id': 'microsoft-defender-atp-add-indicator-alert-and-block',
+            'id': 'defender-add-indicator-alert-and-block',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
@@ -891,9 +891,9 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
             'title': 'Add indicator: Alert and Block'
         },
         {
-            'categories': ['Microsoft Defender ATP', 'Add Indicator'],
+            'categories': ['Microsoft Defender for Endpoint', 'Add Indicator'],
             'description': 'Add indicator with Allow action for asdf.com',
-            'id': 'microsoft-defender-atp-add-indicator-allowed',
+            'id': 'defender-add-indicator-allowed',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'

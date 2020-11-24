@@ -31,8 +31,8 @@ class CTRInvalidJWTError(CTRBaseError):
 class CTRUnexpectedResponseError(CTRBaseError):
     def __init__(self, error):
         if error and error.get('error_description'):
-            message = f'Microsoft Defender ATP returned unexpected error. ' \
-                      f'Details: {error["error_description"]}'
+            message = f'Microsoft Defender for Endpoint returned unexpected ' \
+                      f'error. Details: {error["error_description"]}'
         else:
             message = 'Something went wrong.'
 
@@ -44,7 +44,7 @@ class CTRUnexpectedResponseError(CTRBaseError):
 
 class CTRBadRequestError(CTRBaseError):
     def __init__(self, error=None):
-        message = 'Invalid request to Microsoft Defender ATP.'
+        message = 'Invalid request to Microsoft Defender for Endpoint.'
         if error:
             message += f' {error}'
         super().__init__(
@@ -57,7 +57,7 @@ class CTRInternalServerError(CTRBaseError):
     def __init__(self):
         super().__init__(
             INTERNAL_SERVER_ERROR,
-            'Microsoft Defender ATP internal error.'
+            'Microsoft Defender for Endpoint internal error.'
         )
 
 
@@ -67,7 +67,7 @@ class CTRTooManyRequestsError(CTRBaseError):
             message = f'Advanced Hunting API rate limit has been exceeded. ' \
                       f'{error.json()["error"]}'
         else:
-            message = 'Too many requests to Microsoft Defender ATP ' \
+            message = 'Too many requests to Microsoft Defender for Endpoint ' \
                       'have been made. Please, try again later.'
         super().__init__(
             TOO_MANY_REQUESTS,
