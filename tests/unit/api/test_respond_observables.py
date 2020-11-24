@@ -124,9 +124,9 @@ def test_respond_target_unisolate(call_api, route, client, valid_jwt):
                            json=valid_json)
 
     exp = {
-        'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+        'categories': ['Microsoft Defender for Endpoint', 'Machine Actions'],
         'description': 'Release from isolation',
-        'id': 'microsoft-defender-atp-Unisolate',
+        'id': 'microsoft-defender-Unisolate',
         'query-params': {
             'observable_type': 'ms_machine_id',
             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
@@ -155,9 +155,9 @@ def test_respond_target_unrestrict_code_execution(call_api, route,
                            json=valid_json)
 
     exp = {
-        'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+        'categories': ['Microsoft Defender for Endpoint', 'Machine Actions'],
         'description': 'Remove app restrictions',
-        'id': 'microsoft-defender-atp-UnrestrictCodeExecution',
+        'id': 'microsoft-defender-UnrestrictCodeExecution',
         'query-params': {
             'observable_type': 'ms_machine_id',
             'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
@@ -184,7 +184,8 @@ def test_respond_target_failure(call_api, route, client, valid_jwt):
         'errors': [
             {
                 'code': 'invalid request',
-                'message': 'Invalid request to Microsoft Defender ATP.',
+                'message':
+                    'Invalid request to Microsoft Defender for Endpoint.',
                 'type': 'fatal',
             }
         ]

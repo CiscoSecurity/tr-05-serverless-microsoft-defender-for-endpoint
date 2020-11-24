@@ -872,7 +872,7 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
         {
             'categories': ['Microsoft Defender for Endpoint', 'Add Indicator'],
             'description': 'Add indicator with Alert action for asdf.com',
-            'id': 'defender-add-indicator-alert',
+            'id': 'microsoft-defender-add-indicator-alert',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
@@ -883,7 +883,7 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
             'categories': ['Microsoft Defender for Endpoint', 'Add Indicator'],
             'description': 'Add indicator with Alert and Block action '
                            'for asdf.com',
-            'id': 'defender-add-indicator-alert-and-block',
+            'id': 'microsoft-defender-add-indicator-alert-and-block',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
@@ -893,7 +893,7 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
         {
             'categories': ['Microsoft Defender for Endpoint', 'Add Indicator'],
             'description': 'Add indicator with Allow action for asdf.com',
-            'id': 'defender-add-indicator-allowed',
+            'id': 'microsoft-defender-add-indicator-allowed',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
@@ -1000,9 +1000,12 @@ HISTORY_MACHINE_ACTIONS_RESPONSE_RESTRICT_CODE_EXECUTION = {
 EXPECTED_RESPONSE_RESPOND_TARGET = {
     'data': [
         {
-            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
             'description': 'Collect investigation package',
-            'id': 'microsoft-defender-atp-CollectInvestigationPackage',
+            'id': 'microsoft-defender-CollectInvestigationPackage',
             'query-params': {
                 'observable_type': 'ms_machine_id',
                 'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
@@ -1010,9 +1013,12 @@ EXPECTED_RESPONSE_RESPOND_TARGET = {
             'title': 'Collect investigation package'
         },
         {
-            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
             'description': 'Isolate Device: Full',
-            'id': 'microsoft-defender-atp-FullIsolation',
+            'id': 'microsoft-defender-FullIsolation',
             'query-params': {
                 'observable_type': 'ms_machine_id',
                 'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
@@ -1020,9 +1026,12 @@ EXPECTED_RESPONSE_RESPOND_TARGET = {
             'title': 'Isolate Device: Full'
         },
         {
-            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
             'description': 'Initiate automated investigation',
-            'id': 'microsoft-defender-atp-InitiateInvestigation',
+            'id': 'microsoft-defender-InitiateInvestigation',
             'query-params': {
                 'observable_type': 'ms_machine_id',
                 'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
@@ -1030,9 +1039,12 @@ EXPECTED_RESPONSE_RESPOND_TARGET = {
             'title': 'Initiate automated investigation'
         },
         {
-            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
             'description': 'Restrict app execution',
-            'id': 'microsoft-defender-atp-RestrictCodeExecution',
+            'id': 'microsoft-defender-RestrictCodeExecution',
             'query-params': {
                 'observable_type': 'ms_machine_id',
                 'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
@@ -1040,9 +1052,12 @@ EXPECTED_RESPONSE_RESPOND_TARGET = {
             'title': 'Restrict app execution'
         },
         {
-            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
             'description': 'Run antivirus scan: Full',
-            'id': 'microsoft-defender-atp-RunAntiVirusScanFull',
+            'id': 'microsoft-defender-RunAntiVirusScanFull',
             'query-params': {
                 'observable_type': 'ms_machine_id',
                 'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
@@ -1050,9 +1065,12 @@ EXPECTED_RESPONSE_RESPOND_TARGET = {
             'title': 'Run antivirus scan: Full'
         },
         {
-            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
             'description': 'Run antivirus scan: Quick',
-            'id': 'microsoft-defender-atp-RunAntiVirusScanQuick',
+            'id': 'microsoft-defender-RunAntiVirusScanQuick',
             'query-params': {
                 'observable_type': 'ms_machine_id',
                 'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
@@ -1060,9 +1078,12 @@ EXPECTED_RESPONSE_RESPOND_TARGET = {
             'title': 'Run antivirus scan: Quick'
         },
         {
-            'categories': ['Microsoft Defender ATP', 'Machine Actions'],
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
             'description': 'Isolate Device: Selective',
-            'id': 'microsoft-defender-atp-SelectiveIsolation',
+            'id': 'microsoft-defender-SelectiveIsolation',
             'query-params': {
                 'observable_type': 'ms_machine_id',
                 'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
