@@ -57,7 +57,7 @@ def respond_observables():
                     'description': f'Remove indicator with {human_action} '
                                    f'action for {observable["value"]}',
                     'categories': [
-                        'Defender ATP',
+                        'Defender for Endpoint',
                         'Remove Indicator'
                     ],
                     'query-params': query_params
@@ -72,7 +72,7 @@ def respond_observables():
                     'description': f'Add indicator with Alert action '
                                    f'for {observable["value"]}',
                     'categories': [
-                        'Defender ATP',
+                        'Defender for Endpoint',
                         'Add Indicator'
                     ],
                     'query-params': query_params
@@ -83,7 +83,7 @@ def respond_observables():
                     'description': f'Add indicator with Alert and Block action'
                                    f' for {observable["value"]}',
                     'categories': [
-                        'Defender ATP',
+                        'Defender for Endpoint',
                         'Add Indicator'
                     ],
                     'query-params': query_params
@@ -94,7 +94,7 @@ def respond_observables():
                     'description': f'Add indicator with Allow action '
                                    f'for {observable["value"]}',
                     'categories': [
-                        'Defender ATP',
+                        'Defender for Endpoint',
                         'Add Indicator'
                     ],
                     'query-params': query_params
