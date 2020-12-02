@@ -39,9 +39,47 @@ def test_health_call_with_without_token_failure(session, route,
     assert response.get_json() == EXPECTED_RESPONSE_400_ERROR
 
 
-def test_health_call_success(route, client, valid_jwt):
+@mock.patch('requests.Session')
+def test_health_call_auth_unexpect_error(session, route, client, valid_jwt):
+    class Session:
+        headers = {}
+
+        def get(self, *args, **kwargs):
+            res = mock.MagicMock()
+            res.ok = False
+            res.status_code = HTTPStatus.FORBIDDEN
+            return res
+
+    session.return_value = Session
+
+    expected_payload = {
+        'errors': [
+            {
+                'code': 'unknown',
+                'message': mock.ANY,
+                'type': 'fatal',
+            }
+        ]
+    }
+
+    response = client.post(route, headers=headers(valid_jwt))
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.get_json() == expected_payload
+
+
+@mock.patch('api.client.Client.call_api')
+def test_health_call_success(call_api, route, client, valid_jwt):
+    call_api.return_value = {
+        "@odata.context": "https://api-us.securitycenter.windows.com"
+                          "/api/$metadata#ExposureScore/$entity",
+        "time": "2019-12-03T07:23:53.280499Z",
+        "score": 33.491554051195706
+    }
+
     response = client.post(route, headers=headers(valid_jwt))
     assert response.status_code == HTTPStatus.OK
+    assert response.get_json() == {'data': {'status': 'ok'}}
 
 
 def test_jwt_miss_auth_header(route, client):

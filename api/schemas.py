@@ -16,6 +16,7 @@ def validate_string(value, *, choices=None):
 
 OBSERVABLE_TYPE_CHOICES = (
     'amp_computer_guid',
+    'ms_machine_id',
     'certificate_common_name',
     'certificate_issuer',
     'certificate_serial',

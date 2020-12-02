@@ -85,7 +85,7 @@ EXPECTED_RESPONSE = {
         'type': 'sighting',
         'confidence': 'High',
         'internal': True,
-        'source': 'Microsoft Defender ATP',
+        'source': 'Microsoft Defender for Endpoint',
         'sensor': 'endpoint',
         'schema_version': '1.0.16',
         'targets': [],
@@ -376,28 +376,28 @@ EXPECTED_RESPONSE = {
         'source_uri': 'https://securitycenter.windows.com/files/'
                       '0d549631690ea297c25b2a4e133cacb8a87b97c6/alerts'},
         {'type': 'sighting', 'confidence': 'High', 'internal': True,
-         'source': 'Microsoft Defender ATP', 'sensor': 'endpoint',
+         'source': 'Microsoft Defender for Endpoint', 'sensor': 'endpoint',
          'schema_version': '1.0.16', 'relations': [
-            {'origin': 'Microsoft Defender ATP',
+            {'origin': 'Microsoft Defender for Endpoint',
              'relation': 'File_Name_Of',
              'source': {'type': 'file_name',
                         'value': 'Ransomware.Rex[1].zip'},
              'related': {'type': 'sha1',
                          'value': '0d549631690ea297c25b2a4e133cacb8a87b97c6'}},
-            {'origin': 'Microsoft Defender ATP',
+            {'origin': 'Microsoft Defender for Endpoint',
              'relation': 'File_Name_Of',
              'source': {'type': 'file_name',
                         'value': 'Ransomware.Rex[1].zip'},
              'related': {'type': 'sha256',
                          'value': '32856e998ff1a8b89e30c9658721595d'
                                   '403ff0eece70dc803a36d1939e429f8d'}},
-            {'origin': 'Microsoft Defender ATP',
+            {'origin': 'Microsoft Defender for Endpoint',
              'relation': 'File_Name_Of',
              'source': {'type': 'file_name',
                         'value': 'Ransomware.Rex[1].zip'},
              'related': {'type': 'md5',
                          'value': '50188823168525455c273c07d8457b87'}},
-            {'origin': 'Microsoft Defender ATP',
+            {'origin': 'Microsoft Defender for Endpoint',
              'relation': 'File_Path_Of',
              'source': {'type': 'file_path',
                         'value': 'C:\\Users\\Serhii\\'
@@ -407,38 +407,38 @@ EXPECTED_RESPONSE = {
                                  'Ransomware.Rex[1].zip'},
              'related': {'type': 'file_name',
                          'value': 'Ransomware.Rex[1].zip'}},
-            {'origin': 'Microsoft Defender ATP',
+            {'origin': 'Microsoft Defender for Endpoint',
              'relation': 'Related_To',
              'source': {'type': 'file_name',
                         'value': 'MicrosoftEdgeCP.exe'},
              'related': {'type': 'file_name',
                          'value': 'Ransomware.Rex[1].zip'}},
-            {'origin': 'Microsoft Defender ATP',
+            {'origin': 'Microsoft Defender for Endpoint',
              'relation': 'File_Name_Of',
              'source': {'type': 'file_name',
                         'value': 'MicrosoftEdgeCP.exe'},
              'related': {'type': 'sha1',
                          'value': 'ecb05717e416d965255387f4edc196889aa12c67'}},
-            {'origin': 'Microsoft Defender ATP',
+            {'origin': 'Microsoft Defender for Endpoint',
              'relation': 'File_Name_Of',
              'source': {'type': 'file_name',
                         'value': 'MicrosoftEdgeCP.exe'},
              'related': {'type': 'sha256',
                          'value': 'ee7174ee353e7d29ce17d29d66411b36'
                                   '23c39d9dec3f439e35af47a7e7a7c895'}},
-            {'origin': 'Microsoft Defender ATP',
+            {'origin': 'Microsoft Defender for Endpoint',
              'relation': 'File_Name_Of',
              'source': {'type': 'file_name',
                         'value': 'MicrosoftEdgeCP.exe'},
              'related': {'type': 'md5',
                          'value': '0e954887fc791f668ce388f89bc3d6c6'}},
-            {'origin': 'Microsoft Defender ATP',
+            {'origin': 'Microsoft Defender for Endpoint',
              'relation': 'File_Path_Of',
              'source': {'type': 'file_path',
                         'value': 'c:\\windows\\system32\\microsoftedgecp.exe'},
              'related': {'type': 'file_name',
                          'value': 'MicrosoftEdgeCP.exe'}},
-            {'origin': 'Microsoft Defender ATP',
+            {'origin': 'Microsoft Defender for Endpoint',
              'relation': 'Related_To',
              'source': {'type': 'file_name',
                         'value': 'MicrosoftEdgeCP.exe'},
@@ -870,9 +870,9 @@ AH_RESPONSE = {
 EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
     'data': [
         {
-            'categories': ['Defender for Endpoint', 'Add Indicator'],
+            'categories': ['Microsoft Defender for Endpoint', 'Add Indicator'],
             'description': 'Add indicator with Alert action for asdf.com',
-            'id': 'defender-add-indicator-alert',
+            'id': 'microsoft-defender-add-indicator-alert',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
@@ -880,10 +880,10 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
             'title': 'Add indicator: Alert'
         },
         {
-            'categories': ['Defender for Endpoint', 'Add Indicator'],
+            'categories': ['Microsoft Defender for Endpoint', 'Add Indicator'],
             'description': 'Add indicator with Alert and Block action '
                            'for asdf.com',
-            'id': 'defender-add-indicator-alert-and-block',
+            'id': 'microsoft-defender-add-indicator-alert-and-block',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
@@ -891,14 +891,204 @@ EXPECTED_RESPONSE_RESPOND_OBSERVABLE = {
             'title': 'Add indicator: Alert and Block'
         },
         {
-            'categories': ['Defender for Endpoint', 'Add Indicator'],
+            'categories': ['Microsoft Defender for Endpoint', 'Add Indicator'],
             'description': 'Add indicator with Allow action for asdf.com',
-            'id': 'defender-add-indicator-allowed',
+            'id': 'microsoft-defender-add-indicator-allowed',
             'query-params': {
                 'observable_type': 'domain',
                 'observable_value': 'asdf.com'
             },
             'title': 'Add indicator: Allow'
+        }
+    ]
+}
+
+AVAILABLE_MACHINE_ACTIONS_RESPONSE = {
+    '@odata.context': 'https://api.securitycenter.windows.com'
+                      '/api/$metadata#Collection(microsoft.windowsDefenderATP'
+                      '.api.ActionAvailabilityStatus)',
+    'value': [
+        {'action': 'FullIsolation',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'SelectiveIsolation',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'RunAntiVirusScan',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'CollectInvestigationPackage',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'StopAndQuarantineFile',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'RestrictCodeExecution',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'InitiateInvestigation',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'OffBoard',
+         'isAvailable': True,
+         'notSupportedReason': None},
+        {'action': 'RunCustomPlaybook',
+         'isAvailable': True,
+         'notSupportedReason': None}
+    ]
+}
+
+HISTORY_MACHINE_ACTIONS_RESPONSE_EMPTY = {
+    '@odata.context': 'https://api.securitycenter.windows.com'
+                      '/api/$metadata#Collection(microsoft.windowsDefenderATP'
+                      '.api.MachineAction)',
+    'value': []
+}
+
+HISTORY_MACHINE_ACTIONS_RESPONSE_ISOLATE = {
+    '@odata.context': 'https://api.securitycenter.windows.com'
+                      '/api/$metadata#Collection(microsoft.windowsDefenderATP'
+                      '.api.MachineAction)',
+    'value': [
+        {'id': 'b5903304-9bef-4197-8aa8-b82d2e1f73d0',
+         'type': 'Isolate',
+         'requestor': '0006810a-4b24-40b7-862b-6e30a2ed88d4',
+         'requestorComment': 'Performed via SecureX Threat Response',
+         'status': 'Succeeded',
+         'machineId': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0',
+         'computerDnsName': 'desktop-au3ip5k',
+         'creationDateTimeUtc': '2020-08-07T22:53:48.9132635Z',
+         'lastUpdateDateTimeUtc': '2020-08-07T22:54:16.2274839Z',
+         'cancellationRequestor': None,
+         'cancellationComment': None,
+         'cancellationDateTimeUtc': None,
+         'errorHResult': 0,
+         'scope': 'Selective',
+         'externalId': None,
+         'requestSource': 'PublicApi',
+         'relatedFileInfo': None,
+         'commands': []},
+    ]
+}
+
+HISTORY_MACHINE_ACTIONS_RESPONSE_RESTRICT_CODE_EXECUTION = {
+    '@odata.context': 'https://api.securitycenter.windows.com'
+                      '/api/$metadata#Collection(microsoft.windowsDefenderATP'
+                      '.api.MachineAction)',
+    'value': [
+        {'id': '398688d1-bc2c-4781-82e5-b4d71fa87dba',
+         'type': 'RestrictCodeExecution',
+         'requestor': '0006810a-4b24-40b7-862b-6e30a2ed88d4',
+         'requestorComment': 'Performed via SecureX Threat Response',
+         'status': 'Succeeded',
+         'machineId': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0',
+         'computerDnsName': 'desktop-au3ip5k',
+         'creationDateTimeUtc': '2020-08-07T22:46:39.0589127Z',
+         'lastUpdateDateTimeUtc': '2020-08-07T22:47:01.5436841Z',
+         'cancellationRequestor': None,
+         'cancellationComment': None,
+         'cancellationDateTimeUtc': None,
+         'errorHResult': 0,
+         'scope': None,
+         'externalId': None,
+         'requestSource': 'PublicApi',
+         'relatedFileInfo': None,
+         'commands': []},
+    ]
+}
+
+EXPECTED_RESPONSE_RESPOND_TARGET = {
+    'data': [
+        {
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
+            'description': 'Collect investigation package',
+            'id': 'microsoft-defender-CollectInvestigationPackage',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Collect investigation package'
+        },
+        {
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
+            'description': 'Isolate Device: Full',
+            'id': 'microsoft-defender-FullIsolation',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Isolate Device: Full'
+        },
+        {
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
+            'description': 'Initiate automated investigation',
+            'id': 'microsoft-defender-InitiateInvestigation',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Initiate automated investigation'
+        },
+        {
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
+            'description': 'Restrict app execution',
+            'id': 'microsoft-defender-RestrictCodeExecution',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Restrict app execution'
+        },
+        {
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
+            'description': 'Run antivirus scan: Full',
+            'id': 'microsoft-defender-RunAntiVirusScanFull',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Run antivirus scan: Full'
+        },
+        {
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
+            'description': 'Run antivirus scan: Quick',
+            'id': 'microsoft-defender-RunAntiVirusScanQuick',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Run antivirus scan: Quick'
+        },
+        {
+            'categories': [
+                'Microsoft Defender for Endpoint',
+                'Machine Actions'
+            ],
+            'description': 'Isolate Device: Selective',
+            'id': 'microsoft-defender-SelectiveIsolation',
+            'query-params': {
+                'observable_type': 'ms_machine_id',
+                'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+            },
+            'title': 'Isolate Device: Selective'
         }
     ]
 }
@@ -911,7 +1101,7 @@ RAW_RESPONSE_TRIGGER_OBSERVABLE = {
     'indicatorType': 'DomainName',
     'action': 'Alert',
     'createdBy': '0006810a-4b24-40b7-862b-6e30a2ed88d4',
-    'source': 'Defender ATP Relay API',
+    'source': 'Defender for Endpoint Relay API',
     'sourceType': 'AadApp',
     'severity': 'High',
     'category': 1,
@@ -935,7 +1125,7 @@ RAW_RESPONSE_TRIGGER_OBSERVABLE = {
     'lookBackPeriod': None,
     'generateAlert': True,
     'additionalInfo': None,
-    'createdByDisplayName': 'Defender ATP Relay API',
+    'createdByDisplayName': 'Defender for Endpoint Relay API',
     'createdBySource': 'PublicApi',
     'certificateInfo': None
 }

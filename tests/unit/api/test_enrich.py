@@ -82,8 +82,13 @@ def test_enrich_call_success(call_api, route, client, valid_jwt,
 
     exp_target_observables = [
         {'type': 'hostname', 'value': 'desktop-au3ip5k'},
+        {'type': 'ms_machine_id',
+         'value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'},
         {'type': 'mac_address', 'value': '00224843C030'},
-        {'type': 'ipv6', 'value': 'fe80::6d25:8926:20c3:49ea'}
+        {'type': 'ip', 'value': '10.1.1.68'},
+        {'type': 'ipv6', 'value': 'fe80::6d25:8926:20c3:49ea'},
+        {'type': 'ms_machine_id',
+         'value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'}
     ]
 
     call_api.side_effect = [
@@ -112,7 +117,8 @@ def test_enrich_call_success(call_api, route, client, valid_jwt,
         sighting = sightings['docs'][0]
         exp_sighting = EXPECTED_RESPONSE['data']['sightings']['docs'][0]
         assert sighting.keys() == exp_sighting.keys()
-        assert exp_target_observables == sighting['targets'][0]['observables']
+        for real in sighting['targets'][0]['observables']:
+            assert real in exp_target_observables
 
 
 @mock.patch('requests.Session.get')

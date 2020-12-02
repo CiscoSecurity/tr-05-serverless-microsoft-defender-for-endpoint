@@ -77,7 +77,7 @@ def test_respond_trigger_unsupported_type_json(route, client, valid_jwt):
 def test_respond_trigger_unsupported_action_id(route, client, valid_jwt):
 
     invalid_json = {
-        'action-id': 'defender-unsupported-action-id',
+        'action-id': 'microsoft-defender-atp-unsupported-action-id',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }
@@ -129,7 +129,7 @@ def test_respond_trigger_api_return_400(api_response, route,
     api_response.return_value = Session
 
     valid_json = {
-        'action-id': 'defender-add-indicator-alert',
+        'action-id': 'microsoft-defender-add-indicator-alert',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }
@@ -161,13 +161,42 @@ def test_respond_trigger_api_return_400(api_response, route,
 def test_respond_trigger_success(call_api, route, client, valid_jwt):
 
     valid_json = {
-        'action-id': 'defender-add-indicator-alert',
+        'action-id': 'microsoft-defender-add-indicator-alert',
         'observable_type': 'domain',
         'observable_value': 'asdf.com'
     }
 
     call_api.side_effect = [
         (RAW_RESPONSE_TRIGGER_OBSERVABLE, None), ]
+
+    response = client.post(route,
+                           headers=headers(valid_jwt),
+                           json=valid_json
+                           )
+
+    expected_payload = {
+        'data': {
+            'status': 'success'
+        }
+    }
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.get_json() == expected_payload
+
+
+@mock.patch('api.client.Client.call_api')
+def test_respond_trigger_target_success(call_api, route, client, valid_jwt):
+
+    valid_json = {
+        'action-id': 'microsoft-defender-Unisolate',
+        'observable_type': 'ms_machine_id',
+        'observable_value': 'ebfef0ac4aa2ab0b4342c9cd078a6dfb6c66adc0'
+    }
+
+    call_api.return_value = (
+        {'Comment': 'Performed via SecureX Threat Response'},
+        None
+    )
 
     response = client.post(route,
                            headers=headers(valid_jwt),
