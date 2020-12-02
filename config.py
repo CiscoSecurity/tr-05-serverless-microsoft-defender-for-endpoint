@@ -24,8 +24,7 @@ class Config:
         'md5': 'MD5',
         'ip': 'IP',
         'ipv6': 'IPV6',
-        'domain': 'Domain',
-        'ms_machine_id': 'ms_machine_id'
+        'domain': 'Domain'
     }
 
     CTIM_SCHEMA_VERSION = '1.0.22'
