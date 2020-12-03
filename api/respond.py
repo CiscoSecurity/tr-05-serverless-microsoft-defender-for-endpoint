@@ -131,7 +131,7 @@ def respond_observables():
     if error:
         return jsonify_errors(error)
 
-    observables = group_observables(observables)
+    observables = group_observables(observables, 'respond')
 
     if not observables:
         return jsonify_data([])

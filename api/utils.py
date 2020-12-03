@@ -97,7 +97,7 @@ def jsonify_errors(error):
     return jsonify(data)
 
 
-def group_observables(relay_input):
+def group_observables(relay_input, endpoint='enrich'):
     # Leave only unique observables
 
     result = []
@@ -107,6 +107,8 @@ def group_observables(relay_input):
 
         # Get only supported types.
         if o_type in current_app.config['MD_ATP_OBSERVABLE_TYPES'].keys():
+            if endpoint == 'enrich' and o_type == 'ms_machine_id':
+                continue
             obj = {'type': o_type, 'value': o_value}
             if obj in result:
                 continue
