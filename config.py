@@ -32,7 +32,7 @@ class Config:
 
     CTR_HEADERS = {
         'User-Agent':
-            'Cisco-CiscoThreatResponseMicrosoftDefenderForEndpoint/1.0.0'
+            'Cisco-SecureXThreatResponseMicrosoftDefenderForEndpoint/1.0.0'
     }
 
     CTR_DEFAULT_ENTITIES_LIMIT = 100
