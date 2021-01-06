@@ -50,7 +50,7 @@ def test_respond_trigger_wrong_key(route, client, valid_jwt):
 def test_respond_trigger_unsupported_type_json(route, client, valid_jwt):
 
     invalid_json = {
-        'action-id': 'defender-add-indicator-alert',
+        'action-id': 'microsoft-defender-add-indicator-alert',
         'observable_type': 'unknown',
         'observable_value': 'asdf.com'
     }
@@ -63,7 +63,7 @@ def test_respond_trigger_unsupported_type_json(route, client, valid_jwt):
     expected_payload = {
         'errors': [
             {
-                'code': 'invalid payload',
+                'code': 'unsupported type',
                 'message': mock.ANY,
                 'type': 'fatal'
             }

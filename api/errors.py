@@ -4,6 +4,7 @@ UNKNOWN = 'unknown'
 INTERNAL_SERVER_ERROR = 'internal error'
 TOO_MANY_REQUESTS = 'too many requests'
 AUTH_ERROR = 'authorization error'
+UNSUPPORTED_TYPE = 'unsupported type'
 
 
 class CTRBaseError(Exception):
@@ -91,4 +92,13 @@ class AuthorizationError(CTRBaseError):
         super().__init__(
             AUTH_ERROR,
             f"Authorization failed: {error}"
+        )
+
+
+class UnsupportedTypeError(CTRBaseError):
+    def __init__(self, type_):
+
+        super().__init__(
+            UNSUPPORTED_TYPE,
+            f'Unsupported observable type {type_}'
         )

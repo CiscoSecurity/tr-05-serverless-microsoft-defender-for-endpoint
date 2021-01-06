@@ -7,7 +7,7 @@ from api.schemas import ObservableSchema, ActionFormParamsSchema
 from api.utils import (get_json, jsonify_data, jsonify_errors, get_jwt,
                        group_observables)
 from api.client import Client
-from api.errors import CTRBadRequestError
+from api.errors import CTRBadRequestError, UnsupportedTypeError
 
 respond_api = Blueprint('respond', __name__)
 
@@ -347,7 +347,8 @@ def respond_trigger():
                 'method': 'POST',
                 'data': {
                     'indicatorValue': data['observable_value'],
-                    'indicatorType': mapping_by_type[data['observable_type']],
+                    'indicatorType':
+                        mapping_by_type.get(data['observable_type']),
                     'action': 'Alert',
                     'title': title,
                     'description': description,
@@ -359,7 +360,8 @@ def respond_trigger():
                 'method': 'POST',
                 'data': {
                     'indicatorValue': data['observable_value'],
-                    'indicatorType': mapping_by_type[data['observable_type']],
+                    'indicatorType':
+                        mapping_by_type.get(data['observable_type']),
                     'action': 'AlertAndBlock',
                     'title': title,
                     'description': description,
@@ -371,7 +373,8 @@ def respond_trigger():
                 'method': 'POST',
                 'data': {
                     'indicatorValue': data['observable_value'],
-                    'indicatorType': mapping_by_type[data['observable_type']],
+                    'indicatorType':
+                        mapping_by_type.get(data['observable_type']),
                     'action': 'Allowed',
                     'title': title,
                     'description': description
@@ -393,6 +396,10 @@ def respond_trigger():
         result['data']['status'] = 'failure'
         result['errors'] = [CTRBadRequestError("Unsupported action.").json, ]
         return jsonify(result)
+
+    if data['observable_type'] != 'ms_machine_id' and \
+            not item['data']['indicatorType']:
+        raise UnsupportedTypeError(data['observable_type'])
 
     if item['data']:
         action = json.dumps(item['data']).encode('utf-8')
