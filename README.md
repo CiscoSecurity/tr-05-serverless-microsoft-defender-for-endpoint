@@ -1,6 +1,9 @@
 [![Gitter Chat](https://img.shields.io/badge/gitter-join%20chat-brightgreen.svg)](https://gitter.im/CiscoSecurity/Threat-Response "Gitter Chat")
 [![Travis CI Build Status](https://travis-ci.com/CiscoSecurity/tr-05-serverless-microsoft-defender-atp.svg?branch=develop)](https://travis-ci.com/CiscoSecurity/tr-05-serverless-microsoft-defender-atp)
 
+# NOTE! This code has been upgraded and the current release no longer supports installation in AWS
+If you wish to deploy in AWS, use [this](https://github.com/CiscoSecurity/tr-05-serverless-microsoft-defender-for-endpoint/releases/tag/v0.1.1) previous release.
+
 # Microsoft Defender for Endpoint Relay
 
 Concrete Relay implementation using
